@@ -16,6 +16,7 @@ import {
     Cable,
     Megaphone,
     Ribbon,
+    Package,
 } from "lucide-react";
 
 type Submenu = {
@@ -97,20 +98,20 @@ export function getAdminMenuList(pathname: string): Group[] {
                 },
                 {
                     href: "",
-                    label: "Subject",
-                    active: pathname.includes("/dashboard/subjects"),
-                    icon: BookOpen,
+                    label: "Product",
+                    active: pathname.includes("/product"),
+                    icon: Package,
                     submenus: [
                         {
-                            href: "/dashboard/subject/new",
+                            href: "/product/new",
                             label: "New",
-                            active: pathname === "/dashboard/subjects/new",
+                            active: pathname === "/product/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/dashboard/subject",
+                            href: "/product",
                             label: "List",
-                            active: pathname === "/dashboard/subjects",
+                            active: pathname === "/product",
                             icon: List,
                         },
                     ],

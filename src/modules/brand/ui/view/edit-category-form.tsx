@@ -107,7 +107,7 @@ export const EditBrandForm = ({ id }: Props) => {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Category name" {...field} disabled={isPending} />
+                                        <Input placeholder="Brand name" {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -121,7 +121,7 @@ export const EditBrandForm = ({ id }: Props) => {
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Category description" {...field} disabled={isPending} />
+                                        <Textarea placeholder="Brand description" {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

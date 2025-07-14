@@ -16,17 +16,17 @@ import { Switch } from "@/components/ui/switch"
 
 import { useTRPC } from "@/trpc/client"
 import { CATEGORY_STATUS } from "@/constant"
-import { useBrandFilter } from "../../filter/use-brand-filter"
-import { BrandSchema, BrandSchemaType } from "@/schema/brand"
+import { useProductFilter } from "../../filter/use-product-filter"
+import { ProductSchema, ProductSchemaType } from "@/schema/product"
 
-export const BrandForm = () => {
-    const [filter] = useBrandFilter()
+export const ProductForm = () => {
+    const [filter] = useProductFilter()
 
     const router = useRouter()
     const trpc = useTRPC()
     const queryClient = useQueryClient()
 
-    const { mutate: createBrand, isPending } = useMutation(trpc.brand.createOne.mutationOptions({
+    const { mutate: createProduct, isPending } = useMutation(trpc.product.createOne.mutationOptions({
         onError: (error) => {
             toast.error(error.message);
         },
@@ -37,37 +37,42 @@ export const BrandForm = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.brand.getMany.queryOptions({
+                trpc.product.getMany.queryOptions({
                     ...filter,
                 })
             );
             queryClient.invalidateQueries(
-                trpc.brand.forSelect.queryOptions({
+                trpc.product.forSelect.queryOptions({
                     search: "",
                 })
             );
-            router.push("/brand");
+            router.push("/product");
         },
     }))
 
-    const form = useForm<BrandSchemaType>({
-        resolver: zodResolver(BrandSchema),
+    const form = useForm<ProductSchemaType>({
+        resolver: zodResolver(ProductSchema),
         defaultValues: {
             name: "",
             description: "",
+            price: "",
+            discountPrice: "",
+            brandId: "",
+            stock: "",
+            categoryId: "",
             status: CATEGORY_STATUS.INACTIVE,
         },
     })
 
-    const onSubmit = (data: BrandSchemaType) => {
-        createBrand(data)
+    const onSubmit = (data: ProductSchemaType) => {
+        createProduct(data)
     }
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Add Brand</CardTitle>
-                <CardDescription>Add your brand details below</CardDescription>
+                <CardTitle>Add Product</CardTitle>
+                <CardDescription>Add your product details below</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -79,7 +84,7 @@ export const BrandForm = () => {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Brand name" {...field} disabled={isPending} />
+                                        <Input placeholder="Product name" {...field} disabled={isPending} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -93,7 +98,49 @@ export const BrandForm = () => {
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Brand description" {...field} disabled={isPending} />
+                                        <Textarea placeholder="Product description" {...field} disabled={isPending} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Price</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Product price" {...field} disabled={isPending} type="number" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="discountPrice"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Discount price</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Product discount price" {...field} disabled={isPending} type="number" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="stock"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Stock</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Stock" {...field} disabled={isPending} type="number" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
