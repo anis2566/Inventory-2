@@ -2,31 +2,34 @@ import { z } from "zod";
 
 import { baseProcedure, createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
-import { ProductSchema } from "@/schema/product";
+import { ShopSchema } from "@/schema/shop";
 
-export const productRouter = createTRPCRouter({
+export const shopRouter = createTRPCRouter({
     createOne: baseProcedure
-        .input(ProductSchema)
+        .input(ShopSchema)
         .mutation(async ({ input }) => {
-            const { name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { name, phone, address } = input;
 
             try {
-                await db.product.create({
+                const existingShop = await db.shop.findFirst({
+                    where: { name },
+                })
+
+                if (existingShop) {
+                    return { success: false, message: "SHop already exists" }
+                }
+
+                await db.shop.create({
                     data: {
                         name,
-                        description,
-                        status,
-                        categoryId,
-                        brandId,
-                        price: Number(price),
-                        discountPrice: Number(discountPrice),
-                        stock: Number(stock)
+                        address,
+                        phone
                     },
                 });
 
-                return { success: true, message: "Product created" }
+                return { success: true, message: "Shop created" }
             } catch (error) {
-                console.error("Error creating product", error);
+                console.error("Error creating shop", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -34,38 +37,33 @@ export const productRouter = createTRPCRouter({
         .input(
             z.object({
                 id: z.string(),
-                ...ProductSchema.shape,
+                ...ShopSchema.shape,
             })
         )
         .mutation(async ({ input }) => {
-            const { id, name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { id, name, phone, address } = input;
 
             try {
-                const existingProduct = await db.product.findUnique({
+                const existingShop = await db.shop.findUnique({
                     where: { id },
                 });
 
-                if (!existingProduct) {
-                    return { success: false, message: "Product not found" }
+                if (!existingShop) {
+                    return { success: false, message: "Shop not found" }
                 }
 
-                await db.product.update({
+                await db.shop.update({
                     where: { id },
                     data: {
                         name,
-                        description,
-                        status,
-                        categoryId,
-                        brandId,
-                        price: Number(price),
-                        discountPrice: Number(discountPrice),
-                        stock: Number(stock)
+                        address,
+                        phone
                     },
                 });
 
-                return { success: true, message: "Product updated" }
+                return { success: true, message: "Shop updated" }
             } catch (error) {
-                console.error("Error updating product", error);
+                console.error("Error updating shop", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -77,21 +75,21 @@ export const productRouter = createTRPCRouter({
             const { id } = input;
 
             try {
-                const existingProduct = await db.product.findUnique({
+                const existingShop = await db.shop.findUnique({
                     where: { id },
                 });
 
-                if (!existingProduct) {
-                    return { success: false, message: "Product not found" }
+                if (!existingShop) {
+                    return { success: false, message: "Shop not found" }
                 }
 
-                await db.product.delete({
+                await db.shop.delete({
                     where: { id },
                 });
 
-                return { success: true, message: "Product deleted" }
+                return { success: true, message: "Shop deleted" }
             } catch (error) {
-                console.error("Error deleting product", error);
+                console.error("Error deleting shop", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -104,7 +102,7 @@ export const productRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             const { ids } = input;
             try {
-                await db.product.deleteMany({
+                await db.shop.deleteMany({
                     where: {
                         id: {
                             in: ids,
@@ -114,10 +112,10 @@ export const productRouter = createTRPCRouter({
 
                 return {
                     success: true,
-                    message: "Products deleted successfully",
+                    message: "Shops deleted successfully",
                 };
             } catch (error) {
-                console.error(`Error deleting products: ${error}`);
+                console.error(`Error deleting shops: ${error}`);
                 return {
                     success: false,
                     message: "Internal Server Error",
@@ -132,7 +130,7 @@ export const productRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { search } = input;
-            const products = await db.product.findMany({
+            const shops = await db.shop.findMany({
                 where: {
                     ...(search && {
                         name: {
@@ -144,10 +142,9 @@ export const productRouter = createTRPCRouter({
                 select: {
                     id: true,
                     name: true,
-                    price: true
                 },
             });
-            return products;
+            return shops;
         }),
     getOne: baseProcedure
         .input(
@@ -157,12 +154,12 @@ export const productRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { id } = input;
-            const product = await db.product.findUnique({
+            const shop = await db.shop.findUnique({
                 where: {
                     id,
                 },
             });
-            return product;
+            return shop;
         }),
     getMany: baseProcedure
         .input(
@@ -175,10 +172,10 @@ export const productRouter = createTRPCRouter({
             })
         )
         .query(async ({ input }) => {
-            const { page, limit, sort, search, status } = input;
+            const { page, limit, sort, search } = input;
 
-            const [products, totalCount] = await Promise.all([
-                db.product.findMany({
+            const [shops, totalCount] = await Promise.all([
+                db.shop.findMany({
                     where: {
                         ...(search && {
                             name: {
@@ -186,19 +183,6 @@ export const productRouter = createTRPCRouter({
                                 mode: "insensitive",
                             },
                         }),
-                        ...(status && { status }),
-                    },
-                    include: {
-                        brand: {
-                            select: {
-                                name: true
-                            }
-                        },
-                        category: {
-                            select: {
-                                name: true
-                            }
-                        }
                     },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
@@ -207,7 +191,7 @@ export const productRouter = createTRPCRouter({
                     skip: (page - 1) * limit,
 
                 }),
-                db.product.count({
+                db.shop.count({
                     where: {
                         ...(search && {
                             name: {
@@ -215,10 +199,9 @@ export const productRouter = createTRPCRouter({
                                 mode: "insensitive",
                             },
                         }),
-                        ...(status && { status }),
                     },
                 }),
             ]);
-            return { products, totalCount };
+            return { shops, totalCount };
         }),
 })

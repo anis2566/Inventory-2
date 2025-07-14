@@ -2,31 +2,37 @@ import { z } from "zod";
 
 import { baseProcedure, createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
-import { ProductSchema } from "@/schema/product";
+import { EmployeeSchema } from "@/schema/employee";
 
-export const productRouter = createTRPCRouter({
+export const employeeRouter = createTRPCRouter({
     createOne: baseProcedure
-        .input(ProductSchema)
+        .input(EmployeeSchema)
         .mutation(async ({ input }) => {
-            const { name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { name, phone, address, avatar, nid, status } = input;
 
             try {
-                await db.product.create({
+                const existingEmployee = await db.employee.findFirst({
+                    where: { name },
+                })
+
+                if (existingEmployee) {
+                    return { success: false, message: "Employee already exists" }
+                }
+
+                await db.employee.create({
                     data: {
                         name,
-                        description,
-                        status,
-                        categoryId,
-                        brandId,
-                        price: Number(price),
-                        discountPrice: Number(discountPrice),
-                        stock: Number(stock)
+                        phone,
+                        address,
+                        avatar,
+                        nid,
+                        status
                     },
                 });
 
-                return { success: true, message: "Product created" }
+                return { success: true, message: "Employee created" }
             } catch (error) {
-                console.error("Error creating product", error);
+                console.error("Error creating employee", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -34,38 +40,36 @@ export const productRouter = createTRPCRouter({
         .input(
             z.object({
                 id: z.string(),
-                ...ProductSchema.shape,
+                ...EmployeeSchema.shape,
             })
         )
         .mutation(async ({ input }) => {
-            const { id, name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { id, name, phone, address, avatar, nid, status } = input;
 
             try {
-                const existingProduct = await db.product.findUnique({
+                const existingEmployee = await db.employee.findUnique({
                     where: { id },
                 });
 
-                if (!existingProduct) {
-                    return { success: false, message: "Product not found" }
+                if (!existingEmployee) {
+                    return { success: false, message: "Employee not found" }
                 }
 
-                await db.product.update({
+                await db.employee.update({
                     where: { id },
                     data: {
                         name,
-                        description,
-                        status,
-                        categoryId,
-                        brandId,
-                        price: Number(price),
-                        discountPrice: Number(discountPrice),
-                        stock: Number(stock)
+                        phone,
+                        address,
+                        avatar,
+                        nid,
+                        status
                     },
                 });
 
-                return { success: true, message: "Product updated" }
+                return { success: true, message: "Employee updated" }
             } catch (error) {
-                console.error("Error updating product", error);
+                console.error("Error updating employee", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -77,21 +81,21 @@ export const productRouter = createTRPCRouter({
             const { id } = input;
 
             try {
-                const existingProduct = await db.product.findUnique({
+                const existingEmployee = await db.employee.findUnique({
                     where: { id },
                 });
 
-                if (!existingProduct) {
-                    return { success: false, message: "Product not found" }
+                if (!existingEmployee) {
+                    return { success: false, message: "Employee not found" }
                 }
 
-                await db.product.delete({
+                await db.brand.delete({
                     where: { id },
                 });
 
-                return { success: true, message: "Product deleted" }
+                return { success: true, message: "Employee deleted" }
             } catch (error) {
-                console.error("Error deleting product", error);
+                console.error("Error deleting employee", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
@@ -104,7 +108,7 @@ export const productRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             const { ids } = input;
             try {
-                await db.product.deleteMany({
+                await db.employee.deleteMany({
                     where: {
                         id: {
                             in: ids,
@@ -114,10 +118,10 @@ export const productRouter = createTRPCRouter({
 
                 return {
                     success: true,
-                    message: "Products deleted successfully",
+                    message: "Employees deleted successfully",
                 };
             } catch (error) {
-                console.error(`Error deleting products: ${error}`);
+                console.error(`Error deleting employees: ${error}`);
                 return {
                     success: false,
                     message: "Internal Server Error",
@@ -132,7 +136,7 @@ export const productRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { search } = input;
-            const products = await db.product.findMany({
+            const employees = await db.brand.findMany({
                 where: {
                     ...(search && {
                         name: {
@@ -144,10 +148,9 @@ export const productRouter = createTRPCRouter({
                 select: {
                     id: true,
                     name: true,
-                    price: true
                 },
             });
-            return products;
+            return employees;
         }),
     getOne: baseProcedure
         .input(
@@ -157,12 +160,12 @@ export const productRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { id } = input;
-            const product = await db.product.findUnique({
+            const employee = await db.employee.findUnique({
                 where: {
                     id,
                 },
             });
-            return product;
+            return employee;
         }),
     getMany: baseProcedure
         .input(
@@ -177,8 +180,8 @@ export const productRouter = createTRPCRouter({
         .query(async ({ input }) => {
             const { page, limit, sort, search, status } = input;
 
-            const [products, totalCount] = await Promise.all([
-                db.product.findMany({
+            const [employees, totalCount] = await Promise.all([
+                db.employee.findMany({
                     where: {
                         ...(search && {
                             name: {
@@ -188,18 +191,6 @@ export const productRouter = createTRPCRouter({
                         }),
                         ...(status && { status }),
                     },
-                    include: {
-                        brand: {
-                            select: {
-                                name: true
-                            }
-                        },
-                        category: {
-                            select: {
-                                name: true
-                            }
-                        }
-                    },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
                     },
@@ -207,7 +198,7 @@ export const productRouter = createTRPCRouter({
                     skip: (page - 1) * limit,
 
                 }),
-                db.product.count({
+                db.employee.count({
                     where: {
                         ...(search && {
                             name: {
@@ -219,6 +210,6 @@ export const productRouter = createTRPCRouter({
                     },
                 }),
             ]);
-            return { products, totalCount };
+            return { employees, totalCount };
         }),
 })

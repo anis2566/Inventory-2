@@ -9,44 +9,105 @@ datasource db {
 }
 
 model Brand {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  name          String          @unique
-  description   String?
-  status        String          @default("Pending")
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  description String?
+  status      String  @default("Pending")
 
-  products      Product[]
+  products Product[]
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  name          String          @unique
-  description   String?
-  status        String          @default("Pending")
-  
-  products      Product[]
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  description String?
+  status      String  @default("Pending")
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  name          String          
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
   description   String?
   price         Int
   stock         Int
   discountPrice Int?
-  status        String          @default("Active")
+  status        String  @default("Active")
 
-  brandId       String          @db.ObjectId
-  brand         Brand           @relation(fields: [brandId], references: [id], onDelete: NoAction)
+  brandId String @db.ObjectId
+  brand   Brand  @relation(fields: [brandId], references: [id], onDelete: NoAction)
 
-  categoryId    String          @db.ObjectId
-  category      Category        @relation(fields: [categoryId], references: [id], onDelete: NoAction)
+  categoryId String   @db.ObjectId
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  Sale      Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  phone   String
+  avatar  String?
+  nid     String?
+  address String
+  status  String  @default("Active")
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shop {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  address String
+  phone   String?
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  total Int
+  status  String @default("Pending")
+
+  shopId String @db.ObjectId
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: NoAction)
+
+  employeeId String   @db.ObjectId
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: NoAction)
+
+  products Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity  Int
+  total     Int
+
+  productId String  @db.ObjectId
+  Product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
+
+  orderId String @db.ObjectId
+  Order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

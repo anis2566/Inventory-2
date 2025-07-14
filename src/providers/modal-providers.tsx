@@ -6,6 +6,12 @@ import { DeleteManyBrandModal } from "@/modules/brand/ui/modal/delete-many-modal
 import { DeleteBrandModal } from "@/modules/brand/ui/modal/delete-modal";
 import { DeleteManyCategoryModal } from "@/modules/category/ui/modal/delete-many-modal";
 import { DeleteCategoryModal } from "@/modules/category/ui/modal/delete-modal";
+import { DeleteProductModal } from "@/modules/product/ui/modal/delete-modal";
+import { DeleteManyProductModal } from "@/modules/product/ui/modal/delete-many-modal";
+import { DeleteManyEmployeeModal } from "@/modules/employee/ui/modal/delete-many-modal";
+import { DeleteBrandEmployee } from "@/modules/employee/ui/modal/delete-modal";
+import { DeleteShopModal } from "@/modules/shop/ui/modal/delete-modal";
+import { DeleteManyShopModal } from "@/modules/shop/ui/modal/delete-many-modal";
 
 export const ModalProvider = () => {
     return (
@@ -14,6 +20,12 @@ export const ModalProvider = () => {
             <DeleteManyCategoryModal />
             <DeleteBrandModal />
             <DeleteManyBrandModal />
+            <DeleteProductModal />
+            <DeleteManyProductModal />
+            <DeleteBrandEmployee />
+            <DeleteManyEmployeeModal />
+            <DeleteShopModal />
+            <DeleteManyShopModal />
         </Suspense>
     )
 }

@@ -17,6 +17,8 @@ import {
     Megaphone,
     Ribbon,
     Package,
+    Users,
+    ShoppingBag,
 } from "lucide-react";
 
 type Submenu = {
@@ -112,6 +114,66 @@ export function getAdminMenuList(pathname: string): Group[] {
                             href: "/product",
                             label: "List",
                             active: pathname === "/product",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Employee",
+                    active: pathname.includes("/employee"),
+                    icon: Users,
+                    submenus: [
+                        {
+                            href: "/employee/new",
+                            label: "New",
+                            active: pathname === "/employee/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/employee",
+                            label: "List",
+                            active: pathname === "/employee",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Shop",
+                    active: pathname.includes("/shop"),
+                    icon: Users,
+                    submenus: [
+                        {
+                            href: "/shop/new",
+                            label: "New",
+                            active: pathname === "/shop/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/shop",
+                            label: "List",
+                            active: pathname === "/shop",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Order",
+                    active: pathname.includes("/order"),
+                    icon: ShoppingBag,
+                    submenus: [
+                        {
+                            href: "/order/new",
+                            label: "New",
+                            active: pathname === "/order/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/order",
+                            label: "List",
+                            active: pathname === "/order",
                             icon: List,
                         },
                     ],

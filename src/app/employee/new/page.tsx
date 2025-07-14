@@ -11,30 +11,24 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { ContentLayout } from "@/modules/ui/view/content-layout";
-import { ProductForm } from "@/modules/product/ui/view/product-form";
-import { getQueryClient, trpc } from "@/trpc/server";
+import { EmployeeForm } from "@/modules/employee/ui/view/employee-form";
 
 export const metadata: Metadata = {
-    title: "New Product",
-    description: "New Product",
+    title: "New Employee",
+    description: "New Employee",
 };
 
-const NewProduct = async () => {
-    const queryClient = getQueryClient()
-
-    void queryClient.prefetchQuery(trpc.brand.forSelect.queryOptions({ search: "" }));
-    void queryClient.prefetchQuery(trpc.category.forSelect.queryOptions({ search: "" }));
-    
+const NewEmployee = async () => {
     return (
         <ContentLayout navChildren={<NavChildren />}>
-            <ProductForm />
+            <EmployeeForm />
         </ContentLayout>
     )
 }
 
-export default NewProduct
+export default NewEmployee
 
-const NavChildren = async () => {
+const NavChildren = () => {
     return (
         <Breadcrumb>
             <BreadcrumbList>
@@ -48,8 +42,8 @@ const NavChildren = async () => {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/product">
-                            Products
+                        <Link href="/employee">
+                            Employee
                         </Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
