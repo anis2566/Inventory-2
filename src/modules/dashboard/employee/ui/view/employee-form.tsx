@@ -2,10 +2,11 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Send, Trash2 } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Check, ChevronsUpDown, Send, Trash2 } from "lucide-react"
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -13,7 +14,19 @@ import { LoadingButton } from "@/components/loading-button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button"
 
 import { useTRPC } from "@/trpc/client"
@@ -21,13 +34,20 @@ import { CATEGORY_STATUS } from "@/constant"
 import { useEmployeeFilter } from "../../filter/use-employee-filter"
 import { EmployeeSchema, EmployeeSchemaType } from "@/schema/employee"
 import { UploadButton } from "@/lib/uploadthing"
+import { cn } from "@/lib/utils"
 
 export const EmployeeForm = () => {
+    const [searchUser, setSearchUser] = useState<string>("")
+    const [user, setUser] = useState<string>("")
+    const [openUser, setOpenUser] = useState<boolean>(false)
+
     const [filter] = useEmployeeFilter()
 
     const router = useRouter()
     const trpc = useTRPC()
     const queryClient = useQueryClient()
+
+    const { data } = useSuspenseQuery(trpc.user.forSelect.queryOptions({ search: searchUser }))
 
     const { mutate: createEmployee, isPending } = useMutation(trpc.employee.createOne.mutationOptions({
         onError: (error) => {
@@ -56,6 +76,7 @@ export const EmployeeForm = () => {
     const form = useForm<EmployeeSchemaType>({
         resolver: zodResolver(EmployeeSchema),
         defaultValues: {
+            userId: "",
             name: "",
             phone: "",
             avatar: "",
@@ -78,6 +99,77 @@ export const EmployeeForm = () => {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="userId"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>User</FormLabel>
+                                    <Popover open={openUser} onOpenChange={setOpenUser}>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    className={cn(
+                                                        "w-full justify-between bg-gray-700 border-gray-700 hover:bg-gray-600 hover:border-gray-600 text-gray-400 hover:text-white",
+                                                    )}
+                                                    disabled={isPending}
+                                                >
+                                                    {user ? user : "Select user"}
+                                                    <ChevronsUpDown className="opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-full p-0 border-gray-600">
+                                            <Command className="space-y-2 bg-gray-700 w-full min-w-[350px] p-2">
+                                                <Input
+                                                    type="search"
+                                                    placeholder="Search brand..."
+                                                    value={searchUser}
+                                                    onChange={(e) => setSearchUser(e.target.value)}
+                                                    className="w-full bg-gray-600 placeholder:text-gray-400 rounded-full text-white"
+                                                />
+                                                <CommandList>
+                                                    <CommandEmpty>No brand found.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {data?.map((user) => (
+                                                            <CommandItem
+                                                                value={user.id}
+                                                                key={user.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("userId", user.id);
+                                                                    setUser(user.name);
+                                                                    form.trigger("userId");
+                                                                    setOpenUser(false);
+                                                                }}
+                                                                className="text-gray-400 data-[selected=true]:bg-gray-600 data-[selected=true]:text-white text-white flex justify-between items-center"
+                                                            >
+                                                                <Avatar>
+                                                                    <AvatarImage src={user.avatar || ""} />
+                                                                    <AvatarFallback>{user.name}</AvatarFallback>
+                                                                </Avatar>
+                                                                {user.name}
+                                                                <Check
+                                                                    className={cn(
+                                                                        "ml-auto text-white",
+                                                                        user.id === field.value
+                                                                            ? "opacity-100"
+                                                                            : "opacity-0"
+                                                                    )}
+                                                                />
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <FormField
                             control={form.control}
                             name="name"

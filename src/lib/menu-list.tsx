@@ -178,79 +178,22 @@ export function getAdminMenuList(pathname: string): Group[] {
                         },
                     ],
                 },
-            ],
-        },
-        {
-            groupLabel: "Plan & Pricing ",
-            menus: [
                 {
                     href: "",
-                    label: "Credit",
-                    active: pathname.includes("/dashboard/plan/credit"),
-                    icon: DollarSign,
+                    label: "User",
+                    active: pathname.includes("/dashboard/user"),
+                    icon: Users,
                     submenus: [
                         {
-                            href: "/dashboard/plan/credit/new",
+                            href: "/dashboard/user/new",
                             label: "New",
-                            active: pathname === "/dashboard/plan/credit/new",
+                            active: pathname === "/dashboard/user/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/dashboard/plan/credit",
+                            href: "/dashboard/user",
                             label: "List",
-                            active: pathname === "/dashboard/plan/credit",
-                            icon: List,
-                        },
-                    ],
-                },
-                {
-                    href: "",
-                    label: "Exam Plan",
-                    active: pathname.includes("/dashboard/plan/exam"),
-                    icon: NotebookPen,
-                    submenus: [
-                        {
-                            href: "/dashboard/plan/exam/new",
-                            label: "New",
-                            active: pathname === "/dashboard/plan/exam/new",
-                            icon: PlusCircle,
-                        },
-                        {
-                            href: "/dashboard/plan/exam",
-                            label: "List",
-                            active: pathname === "/dashboard/plan/exam",
-                            icon: List,
-                        },
-                    ],
-                },
-                {
-                    href: "/dashboard/transaction",
-                    label: "Transactions",
-                    active: pathname.includes("/dashboard/transaction"),
-                    icon: CreditCard,
-                    submenus: [],
-                },
-            ],
-        },
-        {
-            groupLabel: "Others",
-            menus: [
-                {
-                    href: "",
-                    label: "Announcement",
-                    active: pathname.includes("/dashboard/announcement"),
-                    icon: Megaphone,
-                    submenus: [
-                        {
-                            href: "/dashboard/announcement/new",
-                            label: "New",
-                            active: pathname === "/dashboard/announcement/new",
-                            icon: PlusCircle,
-                        },
-                        {
-                            href: "/dashboard/announcement",
-                            label: "List",
-                            active: pathname === "/dashboard/announcement",
+                            active: pathname === "/dashboard/user",
                             icon: List,
                         },
                     ],
@@ -266,9 +209,9 @@ export function getUserMenuList(pathname: string): Group[] {
             groupLabel: "",
             menus: [
                 {
-                    href: "/user",
+                    href: "/",
                     label: "Dashboard",
-                    active: pathname === "/user",
+                    active: pathname === "/",
                     icon: LayoutGrid,
                     submenus: [],
                 },
@@ -278,11 +221,24 @@ export function getUserMenuList(pathname: string): Group[] {
             groupLabel: "Main ",
             menus: [
                 {
-                    href: "/user/exam/new",
-                    label: "New Exam",
-                    active: pathname === "/user/exam/new",
-                    icon: NotebookPen,
-                    submenus: [],
+                    href: "",
+                    label: "Order",
+                    active: pathname.includes("/order"),
+                    icon: ShoppingBag,
+                    submenus: [
+                        {
+                            href: "/order/new",
+                            label: "New",
+                            active: pathname === "/order/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/order",
+                            label: "List",
+                            active: pathname === "/order",
+                            icon: List,
+                        },
+                    ],
                 },
                 {
                     href: "/user/exam",

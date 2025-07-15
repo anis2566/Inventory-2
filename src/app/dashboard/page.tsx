@@ -1,6 +1,14 @@
+import { db } from '@/lib/db'
 import React from 'react'
 
-const Dashobard = () => {
+const Dashobard = async () => {
+    const user = await db.employee.findMany({
+        include: {
+            user: true
+        }
+    })
+
+    console.log(user)
     return (
         <div>
             Dashboard

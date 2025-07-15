@@ -3,8 +3,9 @@ import { z } from "zod";
 import { CATEGORY_STATUS } from "@/constant";
 
 export const EmployeeSchema = z.object({
+    userId: z.string().min(1, { message: "required" }),
     name: z.string().min(1, { message: "required" }),
-    phone: z.string().length(11, {message: "invalid phone number"}).min(1, { message: "required" }),
+    phone: z.string().length(11, { message: "invalid phone number" }).min(1, { message: "required" }),
     address: z.string().min(1, { message: "required" }),
     avatar: z.string().optional(),
     nid: z.string().optional(),

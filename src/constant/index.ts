@@ -1,4 +1,10 @@
 
+export enum ROLE {
+    User = 'User',
+    SR = 'SR',
+    Admin = 'Admin'
+}
+
 export enum CATEGORY_STATUS {
     ACTIVE = 'Active',
     INACTIVE = 'Inactive'

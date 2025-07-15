@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { SearchParams } from "nuqs";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -11,35 +13,47 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ErrorBoundryUI } from "@/components/error-boundary";
 import Loader from "@/components/loader";
+import { ErrorBoundryUI } from "@/components/error-boundary";
 
 import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
-import { EmployeeForm } from "@/modules/dashboard/employee/ui/view/employee-form";
 import { getQueryClient, trpc } from "@/trpc/server";
+import { userSearchParams } from "@/modules/dashboard/user/filter/params";
+import { UserList } from "@/modules/dashboard/user/ui/view/user-list";
+
 
 export const metadata: Metadata = {
-    title: "New Employee",
-    description: "New Employee",
+    title: "Users",
+    description: "Users",
 };
 
-const NewEmployee = async () => {
+interface Props {
+    searchParams: Promise<SearchParams>;
+}
+
+const Users = async ({ searchParams }: Props) => {
+    const params = await userSearchParams(searchParams);
+
     const queryClient = getQueryClient()
 
-    void queryClient.prefetchQuery(trpc.user.forSelect.queryOptions({ search: "" }));
+    void queryClient.prefetchQuery(trpc.user.getMany.queryOptions({
+        ...params
+    }))
 
     return (
         <ContentLayout navChildren={<NavChildren />}>
-            <Suspense fallback={<Loader />}>
-                <ErrorBoundary fallback={<ErrorBoundryUI />}>
-                    <EmployeeForm />
-                </ErrorBoundary>
-            </Suspense>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Suspense fallback={<Loader />}>
+                    <ErrorBoundary fallback={<ErrorBoundryUI />}>
+                        <UserList />
+                    </ErrorBoundary>
+                </Suspense>
+            </HydrationBoundary>
         </ContentLayout>
     )
 }
 
-export default NewEmployee
+export default Users
 
 const NavChildren = () => {
     return (
@@ -53,16 +67,8 @@ const NavChildren = () => {
                     </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink asChild>
-                        <Link href="/employee">
-                            Employee
-                        </Link>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                    <BreadcrumbPage>New</BreadcrumbPage>
+                    <BreadcrumbPage>Users</BreadcrumbPage>
                 </BreadcrumbItem>
             </BreadcrumbList>
         </Breadcrumb>

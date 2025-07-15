@@ -19,14 +19,18 @@ model User {
   status        String          @default("Pending")
   phone         String?
 
+  employee      Employee?
+
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
   @@index([role])
   @@index([status])
   @@index([createdAt])
+  @@index([name])
   @@index([role, status])
   @@index([status, createdAt])
+  @@index([role, createdAt])
 }
 
 model Brand {
@@ -39,6 +43,10 @@ model Brand {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model Category {
@@ -51,6 +59,10 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model Product {
@@ -73,6 +85,22 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([price])
+  @@index([stock])
+  @@index([createdAt])
+  @@index([name])
+  @@index([brandId, status])
+  @@index([categoryId, status])
+  @@index([status, createdAt])
+  @@index([price, status])
+  @@index([stock, status])
+  @@index([brandId, categoryId])
+  @@index([status, price])
+  @@index([status, stock])
 }
 
 model Employee {
@@ -84,10 +112,20 @@ model Employee {
   address String
   status  String  @default("Active")
 
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+
   orders Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([name])
+  @@index([phone])
+  @@index([status, createdAt])
+  @@index([status, name])
 }
 
 model Shop {
@@ -100,6 +138,10 @@ model Shop {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([createdAt])
+  @@index([phone])
 }
 
 model Order {
@@ -123,10 +165,16 @@ model Order {
   @@index([employeeId])
   @@index([status])
   @@index([createdAt])
+  @@index([total])
+  @@index([due])
   @@index([shopId, status])
   @@index([employeeId, status])
   @@index([shopId, createdAt])
   @@index([status, createdAt])
+  @@index([employeeId, createdAt])
+  @@index([status, total])
+  @@index([shopId, status, createdAt])
+  @@index([employeeId, status, createdAt])
 }
 
 model OrderItem {
@@ -145,8 +193,14 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+  @@index([createdAt])
+  @@index([quantity])
+  @@index([total])
   @@index([orderId, productId])
   @@index([productId, createdAt])
+  @@index([orderId, createdAt])
+  @@index([productId, quantity])
+  @@index([orderId, total])
 }
 
 model Sale {
@@ -156,4 +210,10 @@ model Sale {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([quantity])
+  @@index([total])
+  @@index([createdAt, total])
+  @@index([createdAt, quantity])
 }

@@ -8,7 +8,7 @@ export const employeeRouter = createTRPCRouter({
     createOne: baseProcedure
         .input(EmployeeSchema)
         .mutation(async ({ input }) => {
-            const { name, phone, address, avatar, nid, status } = input;
+            const { name, phone, address, avatar, nid, status, userId } = input;
 
             try {
                 const existingEmployee = await db.employee.findFirst({
@@ -21,6 +21,7 @@ export const employeeRouter = createTRPCRouter({
 
                 await db.employee.create({
                     data: {
+                        userId,
                         name,
                         phone,
                         address,
@@ -89,7 +90,7 @@ export const employeeRouter = createTRPCRouter({
                     return { success: false, message: "Employee not found" }
                 }
 
-                await db.brand.delete({
+                await db.employee.delete({
                     where: { id },
                 });
 

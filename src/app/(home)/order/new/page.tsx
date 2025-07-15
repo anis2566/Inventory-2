@@ -14,32 +14,32 @@ import {
 import { ErrorBoundryUI } from "@/components/error-boundary";
 import Loader from "@/components/loader";
 
-import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
-import { EmployeeForm } from "@/modules/dashboard/employee/ui/view/employee-form";
 import { getQueryClient, trpc } from "@/trpc/server";
+import { ContentLayout } from "@/modules/home/ui/view/content-layout";
+import { OrderForm } from "@/modules/home/order/ui/view/order-form";
 
 export const metadata: Metadata = {
-    title: "New Employee",
-    description: "New Employee",
+    title: "New Order",
+    description: "New Order",
 };
 
-const NewEmployee = async () => {
+const NewOrder = async () => {
     const queryClient = getQueryClient()
 
-    void queryClient.prefetchQuery(trpc.user.forSelect.queryOptions({ search: "" }));
+    void queryClient.prefetchQuery(trpc.shop.forSelect.queryOptions({ search: "" }));
 
     return (
         <ContentLayout navChildren={<NavChildren />}>
             <Suspense fallback={<Loader />}>
                 <ErrorBoundary fallback={<ErrorBoundryUI />}>
-                    <EmployeeForm />
+                    <OrderForm />
                 </ErrorBoundary>
             </Suspense>
         </ContentLayout>
     )
 }
 
-export default NewEmployee
+export default NewOrder
 
 const NavChildren = () => {
     return (
@@ -55,8 +55,8 @@ const NavChildren = () => {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/employee">
-                            Employee
+                        <Link href="/order">
+                            Orders
                         </Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
