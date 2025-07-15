@@ -46,7 +46,7 @@ export const BrandForm = () => {
                     search: "",
                 })
             );
-            router.push("/brand");
+            router.push("/dashboard/brand");
         },
     }))
 

@@ -46,7 +46,7 @@ export const CategoryForm = () => {
                     search: "",
                 })
             );
-            router.push("/category");
+            router.push("/dashboard/category");
         },
     }))
 

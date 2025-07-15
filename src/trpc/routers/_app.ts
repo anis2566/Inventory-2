@@ -2,6 +2,8 @@ import { createTRPCRouter } from '../init';
 import { brandRouter } from './brand';
 import { categoryRouter } from './category';
 import { employeeRouter } from './employee';
+import { orderRouter } from './order';
+import { outgoingRouter } from './outgoing';
 import { productRouter } from './product';
 import { shopRouter } from './shop';
 import { userRouter } from './user';
@@ -12,7 +14,9 @@ export const appRouter = createTRPCRouter({
     product: productRouter,
     employee: employeeRouter,
     shop: shopRouter,
-    user: userRouter
+    user: userRouter,
+    order: orderRouter,
+    outgoing: outgoingRouter
 });
 
 export type AppRouter = typeof appRouter;

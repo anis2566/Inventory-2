@@ -106,7 +106,7 @@ export const EditProductForm = ({ id }: Props) => {
                     })
                 );
                 queryClient.invalidateQueries(trpc.product.getOne.queryOptions({ id }));
-                router.push("/product");
+                router.push("/dashboard/product");
             },
         })
     );

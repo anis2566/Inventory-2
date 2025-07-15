@@ -1,15 +1,17 @@
 import { z } from "zod";
+import { startOfDay, endOfDay } from "date-fns"
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import { db } from "@/lib/db";
 import { BrandSchema } from "@/schema/brand";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS } from "@/constant";
 
 export const orderRouter = createTRPCRouter({
-    createOne: baseProcedure
+    createOne: protectedProcedure
         .input(OrderSchema)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const user = ctx.auth
             const { shopId, orderItems } = input;
 
             try {
@@ -24,6 +26,10 @@ export const orderRouter = createTRPCRouter({
                     return { success: false, message: "You already have a due order" }
                 }
 
+                if (!user.employee?.id) {
+                    return { success: false, message: "You are not an employee" }
+                }
+
                 const total = orderItems.reduce((acc, item) => {
                     return acc + parseFloat(item.price) * parseInt(item.quantity)
                 }, 0)
@@ -32,6 +38,7 @@ export const orderRouter = createTRPCRouter({
                     quantity: Number(item.quantity),
                     productId: item.productId,
                     total: Number(item.price) * Number(item.quantity),
+                    price: Number(item.price)
                 }))
 
                 await db.order.create({
@@ -39,7 +46,7 @@ export const orderRouter = createTRPCRouter({
                         shopId,
                         total,
                         status: ORDER_STATUS.Placed,
-                        employeeId: "6875336521b39e890ad9a871",
+                        employeeId: user.employee.id,
                         orderItems: {
                             createMany: {
                                 data: items
@@ -167,6 +174,57 @@ export const orderRouter = createTRPCRouter({
             });
             return brands;
         }),
+    summary: protectedProcedure
+        .input(
+            z.object({
+                date: z.string().optional().nullable(),
+            })
+        )
+        .query(async ({ input }) => {
+            const {date} = input
+            const targetDate = input.date ? new Date(input.date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
+
+            const orderItems = await db.orderItem.findMany({
+                where: {
+                    createdAt: {
+                        gte: dayStart,
+                        lte: dayEnd,
+                    },
+                },
+                select: {
+                    product: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    quantity: true,
+                },
+            })
+
+            const productMap = new Map<string, number>()
+
+            for (const item of orderItems) {
+                const name = item.product.name
+                const prev = productMap.get(name) ?? 0
+                productMap.set(name, prev + item.quantity)
+            }
+
+            return Array.from(productMap, ([name, quantity]) => ({ name, quantity }))
+        }),
     getOne: baseProcedure
         .input(
             z.object({
@@ -175,12 +233,36 @@ export const orderRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { id } = input;
-            const brand = await db.brand.findUnique({
+            const product = await db.order.findUnique({
                 where: {
                     id,
                 },
+                include: {
+                    employee: {
+                        select: {
+                            name: true
+                        }
+                    },
+                    shop: {
+                        select: {
+                            name: true,
+                            address: true,
+                            phone: true
+                        }
+                    },
+                    orderItems: {
+                        include: {
+                            product: {
+                                select: {
+                                    name: true,
+                                    productCode: true
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            return brand;
+            return product;
         }),
     getMany: baseProcedure
         .input(
@@ -195,8 +277,8 @@ export const orderRouter = createTRPCRouter({
         .query(async ({ input }) => {
             const { page, limit, sort, search, status } = input;
 
-            const [brands, totalCount] = await Promise.all([
-                db.brand.findMany({
+            const [orders, totalCount] = await Promise.all([
+                db.order.findMany({
                     where: {
                         ...(search && {
                             name: {
@@ -206,6 +288,18 @@ export const orderRouter = createTRPCRouter({
                         }),
                         ...(status && { status }),
                     },
+                    include: {
+                        shop: {
+                            select: {
+                                name: true,
+                            }
+                        },
+                        _count: {
+                            select: {
+                                orderItems: true,
+                            }
+                        }
+                    },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
                     },
@@ -213,7 +307,7 @@ export const orderRouter = createTRPCRouter({
                     skip: (page - 1) * limit,
 
                 }),
-                db.brand.count({
+                db.order.count({
                     where: {
                         ...(search && {
                             name: {
@@ -225,6 +319,6 @@ export const orderRouter = createTRPCRouter({
                     },
                 }),
             ]);
-            return { brands, totalCount };
+            return { orders, totalCount };
         }),
 })

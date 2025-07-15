@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { LoadingButton } from "@/components/loading-button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -44,7 +44,7 @@ export const ShopForm = () => {
                     search: "",
                 })
             );
-            router.push("/shop");
+            router.push("/dashboard/shop");
         },
     }))
 

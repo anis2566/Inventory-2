@@ -2,8 +2,8 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Check, ChevronsUpDown, Plus, Send, Trash2 } from "lucide-react"
-import { useQueryClient, useSuspenseQueries } from "@tanstack/react-query"
+import { Check, ChevronsUpDown, Plus, PlusCircle, Send, Trash2 } from "lucide-react"
+import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
@@ -24,12 +24,13 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import { useTRPC } from "@/trpc/client"
 import { OrderSchema, OrderSchemaType } from "@/schema/order"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useCreateShop } from "@/hooks/use-shop"
 
 export const OrderForm = () => {
     const [searchShop, setSearchShop] = useState("")
@@ -45,30 +46,7 @@ export const OrderForm = () => {
     const router = useRouter()
     const trpc = useTRPC()
     const queryClient = useQueryClient()
-
-    // const { mutate: createBrand, isPending } = useMutation(trpc.brand.createOne.mutationOptions({
-    //     onError: (error) => {
-    //         toast.error(error.message);
-    //     },
-    //     onSuccess: (data) => {
-    //         if (!data.success) {
-    //             toast.error(data.message);
-    //             return;
-    //         }
-    //         toast.success(data.message);
-    //         queryClient.invalidateQueries(
-    //             trpc.brand.getMany.queryOptions({
-    //                 ...filter,
-    //             })
-    //         );
-    //         queryClient.invalidateQueries(
-    //             trpc.brand.forSelect.queryOptions({
-    //                 search: "",
-    //             })
-    //         );
-    //         router.push("/brand");
-    //     },
-    // }))
+    const {onOpen} = useCreateShop()
 
     const [shopQuery, productQuery] = useSuspenseQueries({
         queries: [
@@ -80,6 +58,30 @@ export const OrderForm = () => {
             }
         ]
     })
+
+    const { mutate: createOrder, isPending } = useMutation(trpc.order.createOne.mutationOptions({
+        onError: (error) => {
+            toast.error(error.message);
+        },
+        onSuccess: (data) => {
+            if (!data.success) {
+                toast.error(data.message);
+                return;
+            }
+            toast.success(data.message);
+            // queryClient.invalidateQueries(
+            //     trpc.brand.getMany.queryOptions({
+            //         ...filter,
+            //     })
+            // );
+            // queryClient.invalidateQueries(
+            //     trpc.brand.forSelect.queryOptions({
+            //         search: "",
+            //     })
+            // );
+            router.push("/order");
+        },
+    }))
 
     const form = useForm<OrderSchemaType>({
         resolver: zodResolver(OrderSchema),
@@ -127,18 +129,28 @@ export const OrderForm = () => {
         }))
     }
 
-    const onSubmit = (data: OrderSchemaType) => {
-        // createBrand(data)
+    const handlePriceChange = (id: string, value: string) => {
+        form.setValue("orderItems", form.getValues().orderItems.map((item) => {
+            if (item.productId === id) {
+                return {
+                    ...item,
+                    price: value
+                }
+            }
+            return item
+        }))
     }
 
-    const isPending = false;
+    const onSubmit = (data: OrderSchemaType) => {
+        createOrder(data)
+    }
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>New Order</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-1 md:p-4">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
@@ -165,13 +177,18 @@ export const OrderForm = () => {
                                         </PopoverTrigger>
                                         <PopoverContent className="w-full p-0 border-gray-600">
                                             <Command className="space-y-2 bg-gray-700 w-full min-w-[350px] p-2">
-                                                <Input
-                                                    type="search"
-                                                    placeholder="Search category..."
-                                                    value={searchShop}
-                                                    onChange={(e) => setSearchShop(e.target.value)}
-                                                    className="w-full bg-gray-600 placeholder:text-gray-400 rounded-full text-white"
-                                                />
+                                                <div className="flex items-center gap-x-3">
+                                                    <Input
+                                                        type="search"
+                                                        placeholder="Search category..."
+                                                        value={searchShop}
+                                                        onChange={(e) => setSearchShop(e.target.value)}
+                                                        className="w-full bg-gray-600 placeholder:text-gray-400 rounded-full text-white"
+                                                    />
+                                                    <Button size="icon" variant="gray" type="button" onClick={onOpen}>
+                                                        <PlusCircle className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                                 <CommandList>
                                                     <CommandEmpty>No shop found.</CommandEmpty>
                                                     <CommandGroup>
@@ -282,6 +299,7 @@ export const OrderForm = () => {
                                 <TableHeader>
                                     <TableRow className="bg-gray-700 border-gray-600">
                                         <TableHead className="w-[100px]">Product</TableHead>
+                                        <TableHead className="w-[100px]">Price</TableHead>
                                         <TableHead className="w-[100px]">Quantity</TableHead>
                                         <TableHead className="w-[100px]">Total</TableHead>
                                         <TableHead className="w-[100px]">Action</TableHead>
@@ -292,8 +310,11 @@ export const OrderForm = () => {
                                         form.watch().orderItems.map((product, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{product.name}</TableCell>
+                                                <TableCell>
+                                                    <Input type="number" value={product.price} onChange={(e) => handlePriceChange(product.productId, e.target.value)} className="min-w-[80px]" />
+                                                </TableCell>
                                                 <TableCell className="flex items-center gap-2">
-                                                    <Input type="number" value={product.quantity} onChange={(e) => handleQuantityChange(product.productId, e.target.value)} className="min-w-[60px]" />
+                                                    <Input type="number" value={product.quantity} onChange={(e) => handleQuantityChange(product.productId, e.target.value)} className="min-w-[70px]" />
                                                 </TableCell>
                                                 <TableCell>{Number(product.price) * Number(product.quantity)}</TableCell>
                                                 <TableCell>
@@ -307,7 +328,7 @@ export const OrderForm = () => {
                                 </TableBody>
                                 <TableFooter className={cn("", form.watch().orderItems.length === 0 && "hidden")}>
                                     <TableRow className="bg-gray-700">
-                                        <TableHead className="w-[100px]" colSpan={2}>Total</TableHead>
+                                        <TableHead className="w-[100px]" colSpan={3}>Total</TableHead>
                                         <TableHead className="w-[100px]">{form.watch().orderItems.reduce((total, product) => total + Number(product.quantity) * Number(product.price), 0)}</TableHead>
                                         <TableHead className="w-[100px]"></TableHead>
                                     </TableRow>

@@ -69,7 +69,7 @@ export const EmployeeForm = () => {
                     search: "",
                 })
             );
-            router.push("/employee");
+            router.push("/dashboard/employee");
         },
     }))
 

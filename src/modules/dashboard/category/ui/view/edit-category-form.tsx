@@ -70,7 +70,7 @@ export const EditCategoryForm = ({ id }: Props) => {
                     })
                 );
                 queryClient.invalidateQueries(trpc.category.getOne.queryOptions({ id }));
-                router.push("/category");
+                router.push("/dashboard/category");
             },
         })
     );

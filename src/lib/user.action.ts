@@ -15,6 +15,9 @@ export const getCurrentUser = cache(async () => {
         where: {
             clerkId: session.userId
         },
+        include: {
+            employee: true
+        }
     })
 
     if (!user) return null;

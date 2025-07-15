@@ -74,7 +74,7 @@ export const EditEmployeeForm = ({ id }: Props) => {
                     })
                 );
                 queryClient.invalidateQueries(trpc.employee.getOne.queryOptions({ id }));
-                router.push("/employee");
+                router.push("/dashboard/employee");
             },
         })
     );

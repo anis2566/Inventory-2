@@ -68,7 +68,7 @@ export const EditShopForm = ({ id }: Props) => {
                     })
                 );
                 queryClient.invalidateQueries(trpc.shop.getOne.queryOptions({ id }));
-                router.push("/shop");
+                router.push("/dashboard/shop");
             },
         })
     );

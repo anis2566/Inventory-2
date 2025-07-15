@@ -27,3 +27,16 @@ export const useDeleteManyShop = create<DeleteManyShopState>((set) => ({
     onOpen: (ids: string[]) => set({ isOpen: true, ids }),
     onClose: () => set({ isOpen: false, ids: [] }),
 }));
+
+
+interface CreateShopState {
+    isOpen: boolean;
+    onOpen: () => void;
+    onClose: () => void;
+}
+
+export const useCreateShop = create<CreateShopState>((set) => ({
+    isOpen: false,
+    onOpen: () => set({ isOpen: true }),
+    onClose: () => set({ isOpen: false }),
+}));

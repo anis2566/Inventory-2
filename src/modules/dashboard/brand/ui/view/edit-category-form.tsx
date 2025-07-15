@@ -70,7 +70,7 @@ export const EditBrandForm = ({ id }: Props) => {
                     })
                 );
                 queryClient.invalidateQueries(trpc.brand.getOne.queryOptions({ id }));
-                router.push("/brand");
+                router.push("/dashboard/brand");
             },
         })
     );

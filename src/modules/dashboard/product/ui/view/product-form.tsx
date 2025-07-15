@@ -79,7 +79,7 @@ export const ProductForm = () => {
                     search: "",
                 })
             );
-            router.push("/product");
+            router.push("/dashboard/product");
         },
     }))
 

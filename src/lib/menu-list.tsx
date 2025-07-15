@@ -19,6 +19,8 @@ import {
     Package,
     Users,
     ShoppingBag,
+    NotepadText,
+    LogOut,
 } from "lucide-react";
 
 type Submenu = {
@@ -176,6 +178,12 @@ export function getAdminMenuList(pathname: string): Group[] {
                             active: pathname === "/dashboard/order",
                             icon: List,
                         },
+                        {
+                            href: "/dashboard/order/summary",
+                            label: "Summary",
+                            active: pathname === "/dashboard/order/summary",
+                            icon: NotebookText,
+                        },
                     ],
                 },
                 {
@@ -238,66 +246,38 @@ export function getUserMenuList(pathname: string): Group[] {
                             active: pathname === "/order",
                             icon: List,
                         },
+                        {
+                            href: "/order/summary",
+                            label: "Summary",
+                            active: pathname === "/summary",
+                            icon: NotepadText,
+                        },
                     ],
                 },
-                {
-                    href: "/user/exam",
-                    label: "Exam List",
-                    active: pathname === "/user/exam",
-                    icon: List,
-                    submenus: [],
-                },
-                {
-                    href: "/user/feedback",
-                    label: "Feedbacks",
-                    active: pathname === "/user/feedback",
-                    icon: ClipboardPen,
-                    submenus: [],
-                },
-                {
-                    href: "/user/attempt",
-                    label: "Attempts",
-                    active: pathname === "/user/attempt",
-                    icon: WavesLadder,
-                    submenus: [],
-                },
             ],
         },
         {
-            groupLabel: "Plan & Pricing ",
+            groupLabel: "Warehouse",
             menus: [
                 {
-                    href: "/user/plan",
-                    label: "Plans",
-                    active: pathname === "/user/plan",
-                    icon: NotebookText,
-                    submenus: [],
-                },
-                {
-                    href: "/user/purchase",
-                    label: "Purchases",
-                    active: pathname === "/user/purchase",
-                    icon: HandCoins,
-                    submenus: [],
-                },
-                {
-                    href: "/user/transaction",
-                    label: "Transaction",
-                    active: pathname === "/user/transaction",
-                    icon: DollarSign,
-                    submenus: [],
-                },
-            ],
-        },
-        {
-            groupLabel: "Affiliate Program ",
-            menus: [
-                {
-                    href: "/user/refer",
-                    label: "Refers",
-                    active: pathname === "/user/refer",
-                    icon: Cable,
-                    submenus: [],
+                    href: "",
+                    label: "Outgoing",
+                    active: pathname.includes("/outgoing"),
+                    icon: LogOut,
+                    submenus: [
+                        {
+                            href: "/outgoing/new",
+                            label: "New",
+                            active: pathname === "/outgoing/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/outgoing",
+                            label: "List",
+                            active: pathname === "/outgoing",
+                            icon: List,
+                        },
+                    ],
                 },
             ],
         },

@@ -9,20 +9,20 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId       String          @unique
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId String @unique
 
-  name          String
-  email         String          @unique
-  avatar        String?
-  role          String          @default("User")
-  status        String          @default("Pending")
-  phone         String?
+  name   String
+  email  String  @unique
+  avatar String?
+  role   String  @default("User")
+  status String  @default("Pending")
+  phone  String?
 
-  employee      Employee?
+  employee Employee?
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([role])
   @@index([status])
@@ -81,7 +81,8 @@ model Product {
   categoryId String   @db.ObjectId
   category   Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
 
-  orderItems      OrderItem[]
+  orderItems    OrderItem[]
+  outgoingItems OutgoingItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,13 +113,14 @@ model Employee {
   address String
   status  String  @default("Active")
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orders Order[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  outgoings  Outgoing[]
 
   @@index([status])
   @@index([createdAt])
@@ -145,10 +147,10 @@ model Shop {
 }
 
 model Order {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  total Int
-  due   Int?
-  status  String @default("Pending")
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  total  Int
+  due    Int?
+  status String @default("Pending")
 
   shopId String @db.ObjectId
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: NoAction)
@@ -178,12 +180,13 @@ model Order {
 }
 
 model OrderItem {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  quantity  Int
-  total     Int
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  price    Int
+  quantity Int
+  total    Int
 
   productId String  @db.ObjectId
-  Product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
+  product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
 
   orderId String @db.ObjectId
   Order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -204,9 +207,9 @@ model OrderItem {
 }
 
 model Sale {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  quantity  Int
-  total     Int
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity Int
+  total    Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -216,4 +219,31 @@ model Sale {
   @@index([total])
   @@index([createdAt, total])
   @@index([createdAt, quantity])
+}
+
+model Outgoing {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  total Int
+
+  employeeId String   @db.ObjectId
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: NoAction)
+
+  items OutgoingItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OutgoingItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity Int
+
+  outgoingId String   @db.ObjectId
+  outgoing   Outgoing @relation(fields: [outgoingId], references: [id], onDelete: NoAction)
+
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
