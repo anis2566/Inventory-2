@@ -4,6 +4,7 @@ import { CATEGORY_STATUS } from "@/constant";
 
 export const ProductSchema = z.object({
     name: z.string().min(1, { message: "required" }),
+    productCode: z.string().min(1, { message: "required" }),
     description: z.string().optional(),
     price: z.string().min(1, { message: "required" }),
     discountPrice: z.string().optional(),

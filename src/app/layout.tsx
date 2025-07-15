@@ -8,7 +8,6 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
-import { DashboardLayout } from "@/modules/ui/view/dashboard-layout";
 import { TRPCProvider } from "@/providers/trpc-provider";
 import { ModalProvider } from "@/providers/modal-providers";
 
@@ -43,11 +42,9 @@ export default function RootLayout({
             <body
               className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-              <DashboardLayout>
-                {children}
-                <Toaster />
-                <ModalProvider />
-              </DashboardLayout>
+              {children}
+              <Toaster />
+              <ModalProvider />
             </body>
           </html>
         </NuqsAdapter>

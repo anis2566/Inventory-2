@@ -8,6 +8,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId       String          @unique
+
+  name          String
+  email         String          @unique
+  avatar        String?
+  role          String          @default("User")
+  status        String          @default("Pending")
+  phone         String?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+  @@index([role, status])
+  @@index([status, createdAt])
+}
+
 model Brand {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String  @unique
@@ -34,6 +55,7 @@ model Category {
 
 model Product {
   id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  productCode   String  @unique
   name          String
   description   String?
   price         Int
@@ -47,7 +69,7 @@ model Product {
   categoryId String   @db.ObjectId
   category   Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
 
-  Sale      Sale[]
+  orderItems      OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -83,6 +105,7 @@ model Shop {
 model Order {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   total Int
+  due   Int?
   status  String @default("Pending")
 
   shopId String @db.ObjectId
@@ -91,13 +114,22 @@ model Order {
   employeeId String   @db.ObjectId
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: NoAction)
 
-  products Sale[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([shopId, status])
+  @@index([employeeId, status])
+  @@index([shopId, createdAt])
+  @@index([status, createdAt])
 }
 
-model Sale {
+model OrderItem {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   quantity  Int
   total     Int
@@ -107,6 +139,20 @@ model Sale {
 
   orderId String @db.ObjectId
   Order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([orderId, productId])
+  @@index([productId, createdAt])
+}
+
+model Sale {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity  Int
+  total     Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -47,9 +47,9 @@ export function getAdminMenuList(pathname: string): Group[] {
             groupLabel: "",
             menus: [
                 {
-                    href: "/",
+                    href: "/dashboard",
                     label: "Dashboard",
-                    active: pathname === "/",
+                    active: pathname === "/dashboard",
                     icon: LayoutGrid,
                     submenus: [],
                 },
@@ -61,19 +61,19 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Brand",
-                    active: pathname.includes("/brand"),
+                    active: pathname.includes("/dashboard/brand"),
                     icon: Ribbon,
                     submenus: [
                         {
-                            href: "/brand/new",
+                            href: "/dashboard/brand/new",
                             label: "New",
-                            active: pathname === "/brand/new",
+                            active: pathname === "/dashboard/brand/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/brand",
+                            href: "/dashboard/brand",
                             label: "List",
-                            active: pathname === "/brand",
+                            active: pathname === "/dashboard/brand",
                             icon: List,
                         },
                     ],
@@ -81,19 +81,19 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Category",
-                    active: pathname.includes("/category"),
+                    active: pathname.includes("/dashboard/category"),
                     icon: Layers3,
                     submenus: [
                         {
-                            href: "/category/new",
+                            href: "/dashboard/category/new",
                             label: "New",
-                            active: pathname === "/category/new",
+                            active: pathname === "/dashboard/category/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/category",
+                            href: "/dashboard/category",
                             label: "List",
-                            active: pathname === "/category",
+                            active: pathname === "/dashboard/category",
                             icon: List,
                         },
                     ],
@@ -101,19 +101,19 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Product",
-                    active: pathname.includes("/product"),
+                    active: pathname.includes("/dashboard/product"),
                     icon: Package,
                     submenus: [
                         {
-                            href: "/product/new",
+                            href: "/dashboard/product/new",
                             label: "New",
-                            active: pathname === "/product/new",
+                            active: pathname === "/dashboard/product/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/product",
+                            href: "/dashboard/product",
                             label: "List",
-                            active: pathname === "/product",
+                            active: pathname === "/dashboard/product",
                             icon: List,
                         },
                     ],
@@ -121,19 +121,19 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Employee",
-                    active: pathname.includes("/employee"),
+                    active: pathname.includes("/dashboard/employee"),
                     icon: Users,
                     submenus: [
                         {
-                            href: "/employee/new",
+                            href: "/dashboard/employee/new",
                             label: "New",
-                            active: pathname === "/employee/new",
+                            active: pathname === "/dashboard/employee/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/employee",
+                            href: "/dashboard/employee",
                             label: "List",
-                            active: pathname === "/employee",
+                            active: pathname === "/dashboard/employee",
                             icon: List,
                         },
                     ],
@@ -141,19 +141,19 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Shop",
-                    active: pathname.includes("/shop"),
+                    active: pathname.includes("/dashboard/shop"),
                     icon: Users,
                     submenus: [
                         {
-                            href: "/shop/new",
+                            href: "/dashboard/shop/new",
                             label: "New",
-                            active: pathname === "/shop/new",
+                            active: pathname === "/dashboard/shop/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/shop",
+                            href: "/dashboard/shop",
                             label: "List",
-                            active: pathname === "/shop",
+                            active: pathname === "/dashboard/shop",
                             icon: List,
                         },
                     ],
@@ -161,49 +161,22 @@ export function getAdminMenuList(pathname: string): Group[] {
                 {
                     href: "",
                     label: "Order",
-                    active: pathname.includes("/order"),
+                    active: pathname.includes("/dashboard/order"),
                     icon: ShoppingBag,
                     submenus: [
                         {
-                            href: "/order/new",
+                            href: "/dashboard/order/new",
                             label: "New",
-                            active: pathname === "/order/new",
+                            active: pathname === "/dashboard/order/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/order",
+                            href: "/dashboard/order",
                             label: "List",
-                            active: pathname === "/order",
+                            active: pathname === "/dashboard/order",
                             icon: List,
                         },
                     ],
-                },
-                {
-                    href: "",
-                    label: "Chapter",
-                    active: pathname.includes("/dashboard/chapters"),
-                    icon: Layers3,
-                    submenus: [
-                        {
-                            href: "/dashboard/chapter/new",
-                            label: "New",
-                            active: pathname === "/dashboard/chapters/new",
-                            icon: PlusCircle,
-                        },
-                        {
-                            href: "/dashboard/chapter",
-                            label: "List",
-                            active: pathname === "/dashboard/chapters",
-                            icon: List,
-                        },
-                    ],
-                },
-                {
-                    href: "/dashboard/exam",
-                    label: "Exams",
-                    active: pathname.includes("/dashboard/exam"),
-                    icon: NotebookPen,
-                    submenus: [],
                 },
             ],
         },

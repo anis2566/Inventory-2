@@ -8,13 +8,22 @@ export const productRouter = createTRPCRouter({
     createOne: baseProcedure
         .input(ProductSchema)
         .mutation(async ({ input }) => {
-            const { name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { name, description, productCode, status, categoryId, brandId, price, discountPrice, stock } = input;
 
             try {
+                const existingProductCode = await db.product.findUnique({
+                    where: { productCode },
+                })
+
+                if (existingProductCode) {
+                    return { success: false, message: "Product code already exists" }
+                }
+
                 await db.product.create({
                     data: {
                         name,
                         description,
+                        productCode,
                         status,
                         categoryId,
                         brandId,
@@ -38,7 +47,7 @@ export const productRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input }) => {
-            const { id, name, description, status, categoryId, brandId, price, discountPrice, stock } = input;
+            const { id, name, description, productCode, status, categoryId, brandId, price, discountPrice, stock } = input;
 
             try {
                 const existingProduct = await db.product.findUnique({
@@ -49,11 +58,20 @@ export const productRouter = createTRPCRouter({
                     return { success: false, message: "Product not found" }
                 }
 
+                const existingProductCode = await db.product.findUnique({
+                    where: { productCode },
+                })
+
+                if (productCode !== existingProduct.productCode && existingProductCode) {
+                    return { success: false, message: "Product code already exists" }
+                }
+
                 await db.product.update({
                     where: { id },
                     data: {
                         name,
                         description,
+                        productCode,
                         status,
                         categoryId,
                         brandId,
@@ -135,16 +153,27 @@ export const productRouter = createTRPCRouter({
             const products = await db.product.findMany({
                 where: {
                     ...(search && {
-                        name: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
+                        OR: [
+                            {
+                                productCode: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                }
+                            },
+                            {
+                                name: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                }
+                            }
+                        ]
                     }),
                 },
                 select: {
                     id: true,
                     name: true,
-                    price: true
+                    price: true,
+                    productCode: true
                 },
             });
             return products;
@@ -161,6 +190,18 @@ export const productRouter = createTRPCRouter({
                 where: {
                     id,
                 },
+                include: {
+                    brand: {
+                        select: {
+                            name: true
+                        }
+                    },
+                    category: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
             });
             return product;
         }),

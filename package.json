@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "npx prisma generate && npx prisma db push && npm run dev"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.24.0",

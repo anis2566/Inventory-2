@@ -4,7 +4,6 @@ export enum CATEGORY_STATUS {
     INACTIVE = 'Inactive'
 }
 
-
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 5;
 export const DEFAULT_PAGE_SIZE = 5;
@@ -19,3 +18,12 @@ export const DEFAULT_SORT_OPTIONS = [
         value: "asc",
     },
 ];
+
+export enum ORDER_STATUS {
+    Pending = 'Pending',
+    Placed = 'Placed',
+    Shipped = 'Shipped',
+    Delivered = 'Delivered',
+    Due = 'Due',
+    Cancelled = 'Cancelled'
+}
