@@ -15,18 +15,18 @@ import {
 import { LoadingButton } from "@/components/loading-button";
 
 import { useTRPC } from "@/trpc/client";
-import { useDeleteManyBrand } from "@/hooks/use-brand";
-import { useBrandFilter } from "../../filter/use-outgoing-filter";
+import { useDeleteManyOutgoing } from "@/hooks/use-outgoing";
+import { useOutgoingFilter } from "../../filter/use-outgoing-filter";
 
-export const DeleteManyBrandModal = () => {
-    const { isOpen, ids, onClose } = useDeleteManyBrand();
-    const [filter] = useBrandFilter();
+export const DeleteManyOutgoingModal = () => {
+    const { isOpen, ids, onClose } = useDeleteManyOutgoing();
+    const [filter] = useOutgoingFilter();
 
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
     const { mutate, isPending } = useMutation(
-        trpc.brand.deleteMany.mutationOptions({
+        trpc.outgoing.deleteMany.mutationOptions({
             onSuccess: (data) => {
                 if (!data.success) {
                     toast.error(data.message);
@@ -34,7 +34,7 @@ export const DeleteManyBrandModal = () => {
                 }
                 toast.success(data.message);
                 queryClient.invalidateQueries(
-                    trpc.brand.getMany.queryOptions({
+                    trpc.outgoing.getMany.queryOptions({
                         ...filter,
                     })
                 );
@@ -57,7 +57,7 @@ export const DeleteManyBrandModal = () => {
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
                         This action cannot be undone. This will permanently delete your
-                        brands and remove your data from servers.
+                        outgoings and remove your data from servers.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

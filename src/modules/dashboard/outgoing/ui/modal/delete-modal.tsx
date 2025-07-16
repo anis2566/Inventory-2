@@ -15,18 +15,18 @@ import {
 import { LoadingButton } from "@/components/loading-button";
 
 import { useTRPC } from "@/trpc/client";
-import { useDeleteBrand } from "@/hooks/use-brand";
-import { useBrandFilter } from "../../filter/use-outgoing-filter";
+import { useDeleteOutgoing } from "@/hooks/use-outgoing";
+import { useOutgoingFilter } from "../../filter/use-outgoing-filter";
 
-export const DeleteBrandModal = () => {
-    const { isOpen, brandId, onClose } = useDeleteBrand();
-    const [filter] = useBrandFilter();
+export const DeleteOutgoingModal = () => {
+    const { isOpen, outgoingId, onClose } = useDeleteOutgoing();
+    const [filter] = useOutgoingFilter();
 
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
     const { mutate, isPending } = useMutation(
-        trpc.brand.deleteOne.mutationOptions({
+        trpc.outgoing.deleteOne.mutationOptions({
             onSuccess: (data) => {
                 if (!data.success) {
                     toast.error(data.message);
@@ -34,7 +34,7 @@ export const DeleteBrandModal = () => {
                 }
                 toast.success(data.message);
                 queryClient.invalidateQueries(
-                    trpc.brand.getMany.queryOptions({
+                    trpc.outgoing.getMany.queryOptions({
                         ...filter,
                     })
                 );
@@ -47,7 +47,7 @@ export const DeleteBrandModal = () => {
     );
 
     const handleDelete = () => {
-        mutate({ id: brandId });
+        mutate({ id: outgoingId });
     };
 
     return (
@@ -57,7 +57,7 @@ export const DeleteBrandModal = () => {
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
                         This action cannot be undone. This will permanently delete your
-                        brand and remove your data from servers.
+                        outgoing and remove your data from servers.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

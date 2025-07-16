@@ -14,6 +14,8 @@ import { DeleteShopModal } from "@/modules/dashboard/shop/ui/modal/delete-modal"
 import { DeleteManyShopModal } from "@/modules/dashboard/shop/ui/modal/delete-many-modal";
 import { UserRoleModal } from "@/modules/dashboard/user/ui/modal/role-modal";
 import { CreateShopModal } from "@/modules/home/order/ui/modal/create-shop-modal";
+import { DeleteOutgoingModal } from "@/modules/dashboard/outgoing/ui/modal/delete-modal";
+import { DeleteManyOutgoingModal } from "@/modules/dashboard/outgoing/ui/modal/delete-many-modal";
 
 export const ModalProvider = () => {
     return (
@@ -30,6 +32,8 @@ export const ModalProvider = () => {
             <DeleteManyShopModal />
             <UserRoleModal />
             <CreateShopModal />
+            <DeleteOutgoingModal />
+            <DeleteManyOutgoingModal />
         </Suspense>
     )
 }

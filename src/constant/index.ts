@@ -33,3 +33,9 @@ export enum ORDER_STATUS {
     Due = 'Due',
     Cancelled = 'Cancelled'
 }
+
+export enum PRODUCT_CONDITION {
+    Good = 'Good',
+    Damaged = 'Damaged',
+    Returned = 'Returned'
+}

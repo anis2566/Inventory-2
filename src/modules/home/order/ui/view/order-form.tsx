@@ -31,6 +31,7 @@ import { OrderSchema, OrderSchemaType } from "@/schema/order"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useCreateShop } from "@/hooks/use-shop"
+import { useOrderFilter } from "../../filter/use-order-filter"
 
 export const OrderForm = () => {
     const [searchShop, setSearchShop] = useState("")
@@ -43,10 +44,12 @@ export const OrderForm = () => {
     const [price, setPrice] = useState("")
     const [openProduct, setOpenProduct] = useState(false)
 
+    const [filter] = useOrderFilter()
+
     const router = useRouter()
     const trpc = useTRPC()
     const queryClient = useQueryClient()
-    const {onOpen} = useCreateShop()
+    const { onOpen } = useCreateShop()
 
     const [shopQuery, productQuery] = useSuspenseQueries({
         queries: [
@@ -69,16 +72,11 @@ export const OrderForm = () => {
                 return;
             }
             toast.success(data.message);
-            // queryClient.invalidateQueries(
-            //     trpc.brand.getMany.queryOptions({
-            //         ...filter,
-            //     })
-            // );
-            // queryClient.invalidateQueries(
-            //     trpc.brand.forSelect.queryOptions({
-            //         search: "",
-            //     })
-            // );
+            queryClient.invalidateQueries(
+                trpc.order.getManyBySr.queryOptions({
+                    ...filter,
+                })
+            );
             router.push("/order");
         },
     }))
@@ -343,6 +341,7 @@ export const OrderForm = () => {
                             isLoading={false}
                             onClick={form.handleSubmit(onSubmit)}
                             variant="gray"
+                            disabled={form.watch().orderItems.length === 0}
                             icon={Send}
                         />
                     </form>

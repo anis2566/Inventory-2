@@ -25,7 +25,7 @@ export const SummaryView = () => {
 
     const trpc = useTRPC();
 
-    const { data } = useSuspenseQuery(trpc.order.summary.queryOptions({
+    const { data } = useSuspenseQuery(trpc.order.summaryBySr.queryOptions({
         ...filter
     }));
 
@@ -55,10 +55,18 @@ export const SummaryView = () => {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-gray-700 text-white border-gray-600">
-                        <Calendar mode="single" selected={date} onSelect={value => {
-                            setDate(value)
-                            setFilter({ date: value?.toISOString() })
-                        }} />
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(value) => {
+                                if (value) {
+                                    const fixedDate = new Date(value);
+                                    fixedDate.setHours(12, 0, 0, 0);
+                                    setDate(fixedDate);
+                                    setFilter({ date: fixedDate.toISOString() });
+                                }
+                            }}
+                        />
                     </PopoverContent>
                 </Popover>
 

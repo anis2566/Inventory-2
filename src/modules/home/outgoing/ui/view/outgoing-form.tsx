@@ -3,14 +3,16 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check, ChevronsUpDown, Plus, Send, Trash2 } from "lucide-react"
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl } from "@/components/ui/form"
 import { LoadingButton } from "@/components/loading-button"
 import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
     Command,
     CommandEmpty,
@@ -24,20 +26,19 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import { useTRPC } from "@/trpc/client"
 import { useOutgoingFilter } from "../../filter/use-outgoing-filter"
 import { OutgoingSchema, OutgoingSchemaType } from "@/schema/outgoing"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 export const OutgoingForm = () => {
     const [searchProduct, setSearchProduct] = useState("")
-    const [product, setProduct] = useState<string>("")
-    const [openProduct, setOpenProduct] = useState(false)
-    const [productId, setProductId] = useState<string>("")
+    const [product, setProduct] = useState("")
+    const [productId, setProductId] = useState("")
     const [quantity, setQuantity] = useState("")
+    const [price, setPrice] = useState("")
+    const [openProduct, setOpenProduct] = useState(false)
 
     const [filter] = useOutgoingFilter()
 
@@ -45,7 +46,16 @@ export const OutgoingForm = () => {
     const trpc = useTRPC()
     const queryClient = useQueryClient()
 
-    const { data } = useSuspenseQuery(trpc.product.forSelect.queryOptions({ search: searchProduct }));
+    const [productQuery, summaryQuery] = useSuspenseQueries({
+        queries: [
+            {
+                ...trpc.product.forSelect.queryOptions({ search: searchProduct }),
+            },
+            {
+                ...trpc.order.summaryBySr.queryOptions({}),
+            }
+        ]
+    })
 
     const { mutate: createOutgoing, isPending } = useMutation(trpc.outgoing.createOne.mutationOptions({
         onError: (error) => {
@@ -58,13 +68,8 @@ export const OutgoingForm = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.outgoing.getMany.queryOptions({
+                trpc.outgoing.getManyBySr.queryOptions({
                     ...filter,
-                })
-            );
-            queryClient.invalidateQueries(
-                trpc.outgoing.forSelect.queryOptions({
-                    search: "",
                 })
             );
             router.push("/outgoing");
@@ -74,12 +79,16 @@ export const OutgoingForm = () => {
     const form = useForm<OutgoingSchemaType>({
         resolver: zodResolver(OutgoingSchema),
         defaultValues: {
-            items: []
+            items: summaryQuery.data.map((item) => ({
+                quantity: item.quantity.toString(),
+                productId: item.id,
+                name: item.name
+            })) || [],
         },
     })
 
     const handleAddProduct = () => {
-        if (!productId || !quantity) return
+        if (!productId || !quantity || !price || !product) return
 
         if (form.getValues().items.some((item) => item.productId === productId)) {
             toast.error("Product already added")
@@ -103,6 +112,18 @@ export const OutgoingForm = () => {
         form.setValue("items", updatedProducts);
         form.trigger("items");
     };
+
+    const handleQuantityChange = (id: string, value: string) => {
+        form.setValue("items", form.getValues().items.map((item) => {
+            if (item.productId === id) {
+                return {
+                    ...item,
+                    quantity: value
+                }
+            }
+            return item
+        }))
+    }
 
     const onSubmit = (data: OutgoingSchemaType) => {
         createOutgoing(data)
@@ -147,13 +168,14 @@ export const OutgoingForm = () => {
                                         <CommandList>
                                             <CommandEmpty>No product found.</CommandEmpty>
                                             <CommandGroup>
-                                                {data?.map((p) => (
+                                                {productQuery?.data?.map((p) => (
                                                     <CommandItem
                                                         value={p.id}
                                                         key={p.id}
                                                         onSelect={() => {
                                                             setProduct(p.name);
                                                             setProductId(p.id);
+                                                            setPrice(p.price.toString());
                                                             setOpenProduct(false);
                                                         }}
                                                         className="text-gray-400 data-[selected=true]:bg-gray-600 data-[selected=true]:text-white text-white"
@@ -178,7 +200,7 @@ export const OutgoingForm = () => {
 
                             <Input type="number" placeholder="Quantity" className="mt-2" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
 
-                            <Button variant="gray" type="button" onClick={() => handleAddProduct()} disabled={!productId || !quantity || isPending}>
+                            <Button variant="gray" type="button" onClick={() => handleAddProduct()} disabled={!product || !quantity || !price || isPending}>
                                 <Plus className="h-4 w-4" />
                                 Add
                             </Button>
@@ -199,9 +221,11 @@ export const OutgoingForm = () => {
                                         form.watch().items.map((product, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{product.name}</TableCell>
-                                                <TableCell>{product.quantity}</TableCell>
                                                 <TableCell>
-                                                    <Button variant="gray" size="icon" type="button" onClick={() => handleRemoveProduct(product.productId)}>
+                                                    <Input type="number" value={product.quantity} onChange={(e) => handleQuantityChange(product.productId, e.target.value)} className="min-w-[70px]" />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" type="button" onClick={() => handleRemoveProduct(product.productId)} className="hover:bg-gray-700">
                                                         <Trash2 className="h-4 w-4 text-rose-500" />
                                                     </Button>
                                                 </TableCell>
@@ -227,6 +251,7 @@ export const OutgoingForm = () => {
                             isLoading={isPending}
                             onClick={form.handleSubmit(onSubmit)}
                             variant="gray"
+                            disabled={form.watch().items.length === 0}
                             icon={Send}
                         />
                     </form>

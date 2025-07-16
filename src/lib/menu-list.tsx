@@ -21,6 +21,8 @@ import {
     ShoppingBag,
     NotepadText,
     LogOut,
+    Store,
+    LogIn,
 } from "lucide-react";
 
 type Submenu = {
@@ -144,7 +146,7 @@ export function getAdminMenuList(pathname: string): Group[] {
                     href: "",
                     label: "Shop",
                     active: pathname.includes("/dashboard/shop"),
-                    icon: Users,
+                    icon: Store,
                     submenus: [
                         {
                             href: "/dashboard/shop/new",
@@ -205,6 +207,18 @@ export function getAdminMenuList(pathname: string): Group[] {
                             icon: List,
                         },
                     ],
+                },
+            ],
+        },
+        {
+            groupLabel: "Warehouse",
+            menus: [
+                {
+                    href: "/dashboard/outgoing",
+                    label: "Outgoing",
+                    active: pathname === "/dashboard/outgoing",
+                    icon: LogOut,
+                    submenus: [],
                 },
             ],
         },
@@ -275,6 +289,26 @@ export function getUserMenuList(pathname: string): Group[] {
                             href: "/outgoing",
                             label: "List",
                             active: pathname === "/outgoing",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Incoming",
+                    active: pathname.includes("/incoming"),
+                    icon: LogIn,
+                    submenus: [
+                        {
+                            href: "/incoming/new",
+                            label: "New",
+                            active: pathname === "/incoming/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/incoming",
+                            label: "List",
+                            active: pathname === "/incoming",
                             icon: List,
                         },
                     ],

@@ -13,7 +13,7 @@ export const OrderList = () => {
     const trpc = useTRPC();
 
     const { data } = useSuspenseQuery(
-        trpc.order.getMany.queryOptions({
+        trpc.order.getManyBySr.queryOptions({
             ...filter,
         })
     );

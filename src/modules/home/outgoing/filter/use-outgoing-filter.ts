@@ -11,5 +11,6 @@ export const useOutgoingFilter = () => {
             .withDefault(DEFAULT_PAGE_SIZE)
             .withOptions({ clearOnDefault: true }),
         sort: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+        date: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
     });
 };

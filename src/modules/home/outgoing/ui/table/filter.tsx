@@ -1,10 +1,9 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
-import { CircleX, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CalendarIcon, CircleX, Trash2 } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -12,18 +11,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { DataTableViewOptions } from "@/components/data-table-view-option";
-
+import { Calendar } from "@/components/ui/calendar"
 import {
-    CATEGORY_STATUS,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { Button } from "@/components/ui/button";
+
+import { DataTableViewOptions } from "@/components/data-table-view-option";
+import {
     DEFAULT_PAGE,
     DEFAULT_PAGE_SIZE,
     DEFAULT_SORT_OPTIONS,
 } from "@/constant";
-import { useDebounce } from "@/hooks/use-debounce";
-import { useBrandFilter } from "../../filter/use-outgoing-filter";
 import { useDeleteManyBrand } from "@/hooks/use-brand";
+import { useOutgoingFilter } from "../../filter/use-outgoing-filter";
+import { format } from "date-fns";
 
 interface HasId {
     id: string;
@@ -34,41 +38,29 @@ interface FilterProps<TData extends HasId> {
 }
 
 export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
-    const [search, setSearch] = useState<string>("");
+    const [date, setDate] = useState<Date>()
 
     const { onOpen } = useDeleteManyBrand();
-    const [filter, setFilter] = useBrandFilter();
-    const debounceSearchValue = useDebounce(search, 500);
-
-    useEffect(() => {
-        setFilter({ search: debounceSearchValue });
-    }, [debounceSearchValue, setFilter]);
+    const [filter, setFilter] = useOutgoingFilter();
 
     const handleSortChange = (value: string) => {
         setFilter({ sort: value });
     };
 
-    const handleStatusChange = (value: string) => {
-        setFilter({ status: value });
-    };
-
     const handleClear = () => {
-        setSearch("");
         setFilter({
-            search: "",
             limit: DEFAULT_PAGE_SIZE,
             page: DEFAULT_PAGE,
             sort: "",
-            status: "",
+            date: "",
         });
     };
 
     const isAnyModified =
-        !!filter.search ||
         filter.limit !== 5 ||
         filter.page !== 1 ||
         filter.sort !== "" ||
-        filter.status !== "";
+        filter.date !== "";
 
     const isMultipleSelected =
         table.getIsSomeRowsSelected() || table.getIsAllRowsSelected();
@@ -84,27 +76,32 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
     return (
         <div className="w-full flex items-center justify-between">
             <div className="hidden md:flex items-center gap-4">
-                <Input
-                    type="search"
-                    placeholder="search by name..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <Select
-                    value={filter.status}
-                    onValueChange={(value) => handleStatusChange(value)}
-                >
-                    <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(CATEGORY_STATUS).map((v, i) => (
-                            <SelectItem value={v} key={i}>
-                                {v}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="gray"
+                            data-empty={!date}
+                            className="text-gray-400 w-[200px] justify-start text-left font-normal"
+                        >
+                            <CalendarIcon />
+                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-gray-700 text-white border-gray-600">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(value) => {
+                                if (value) {
+                                    const fixedDate = new Date(value);
+                                    fixedDate.setHours(12, 0, 0, 0);
+                                    setDate(fixedDate);
+                                    setFilter({ date: fixedDate.toISOString() });
+                                }
+                            }}
+                        />
+                    </PopoverContent>
+                </Popover>
                 <Select
                     value={filter.sort}
                     onValueChange={(value) => handleSortChange(value)}

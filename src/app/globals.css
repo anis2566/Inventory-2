@@ -123,3 +123,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .font-bengali {
+    font-family: var(--font-bengali), "Noto Sans Bengali", "SolaimanLipi",
+      system-ui, sans-serif;
+  }
+}

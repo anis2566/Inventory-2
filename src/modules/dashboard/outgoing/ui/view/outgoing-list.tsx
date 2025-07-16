@@ -5,15 +5,15 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { DataTable } from "../table/data-table";
 import { columns } from "../table/columns";
-import { useBrandFilter } from "../../filter/use-outgoing-filter";
+import { useOutgoingFilter } from "../../filter/use-outgoing-filter";
 
-export const BrandList = () => {
-    const [filter] = useBrandFilter();
+export const OutgoingList = () => {
+    const [filter] = useOutgoingFilter();
 
     const trpc = useTRPC();
 
     const { data } = useSuspenseQuery(
-        trpc.brand.getMany.queryOptions({
+        trpc.outgoing.getMany.queryOptions({
             ...filter,
         })
     );
@@ -21,7 +21,7 @@ export const BrandList = () => {
     return (
         <div>
             <DataTable
-                data={data.brands}
+                data={data.outgoings}
                 columns={columns}
                 totalCount={data.totalCount}
             />

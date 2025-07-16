@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import {
     Breadcrumb,
@@ -16,7 +17,6 @@ import Loader from "@/components/loader";
 
 import { getQueryClient, trpc } from "@/trpc/server";
 import { ContentLayout } from "@/modules/home/ui/view/content-layout";
-import { OrderForm } from "@/modules/home/order/ui/view/order-form";
 import { OutgoingForm } from "@/modules/home/outgoing/ui/view/outgoing-form";
 
 export const metadata: Metadata = {
@@ -27,15 +27,18 @@ export const metadata: Metadata = {
 const NewOutgoing = async () => {
     const queryClient = getQueryClient()
 
-    void queryClient.prefetchQuery(trpc.product.forSelect.queryOptions({ search: "" }));
+    void queryClient.prefetchQuery(trpc.product.forSelect.queryOptions({}));
+    void queryClient.prefetchQuery(trpc.order.summaryBySr.queryOptions({}));
 
     return (
         <ContentLayout navChildren={<NavChildren />}>
-            <Suspense fallback={<Loader />}>
-                <ErrorBoundary fallback={<ErrorBoundryUI />}>
-                    <OutgoingForm />
-                </ErrorBoundary>
-            </Suspense>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Suspense fallback={<Loader />}>
+                    <ErrorBoundary fallback={<ErrorBoundryUI />}>
+                        <OutgoingForm />
+                    </ErrorBoundary>
+                </Suspense>
+            </HydrationBoundary>
         </ContentLayout>
     )
 }

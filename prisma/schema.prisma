@@ -72,7 +72,9 @@ model Product {
   description   String?
   price         Int
   stock         Int
+  damageStock   Int     @default(0)
   discountPrice Int?
+  productState  String  @default("Good")
   status        String  @default("Active")
 
   brandId String @db.ObjectId
@@ -83,6 +85,7 @@ model Product {
 
   orderItems    OrderItem[]
   outgoingItems OutgoingItem[]
+  incomingItems IngoingItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,6 +105,7 @@ model Product {
   @@index([brandId, categoryId])
   @@index([status, price])
   @@index([status, stock])
+  @@index([productState])
 }
 
 model Employee {
@@ -117,10 +121,11 @@ model Employee {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orders Order[]
+  incomings Incoming[]
+  outgoings  Outgoing[]
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  outgoings  Outgoing[]
 
   @@index([status])
   @@index([createdAt])
@@ -189,7 +194,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
 
   orderId String @db.ObjectId
-  Order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -239,7 +244,36 @@ model OutgoingItem {
   quantity Int
 
   outgoingId String   @db.ObjectId
-  outgoing   Outgoing @relation(fields: [outgoingId], references: [id], onDelete: NoAction)
+  outgoing   Outgoing @relation(fields: [outgoingId], references: [id], onDelete: Cascade)
+
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Incoming {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  total Int
+
+  employeeId String   @db.ObjectId
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: NoAction)
+
+  items IngoingItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IngoingItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity Int
+  reason   String
+
+  incomingId String   @db.ObjectId
+  incoming   Incoming @relation(fields: [incomingId], references: [id], onDelete: Cascade)
 
   productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)

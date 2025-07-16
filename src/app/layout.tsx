@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import {
   ClerkProvider,
 } from '@clerk/nextjs'
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Bengali } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -21,6 +21,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
+  variable: "--font-bengali",
+  display: "swap",
+})
 export const metadata: Metadata = {
   title: {
     template: "%s | POS",
@@ -41,7 +46,12 @@ export default function RootLayout({
         <NuqsAdapter>
           <html lang="en">
             <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+              className={`
+                ${geistSans.variable} 
+                ${geistMono.variable} 
+                ${notoSansBengali.variable} 
+                antialiased
+              `}
             >
               {children}
               <Toaster />

@@ -1,17 +1,16 @@
 import { z } from "zod";
-import { startOfDay, endOfDay } from "date-fns"
 
-import { baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
+import { baseProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { BrandSchema } from "@/schema/brand";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS } from "@/constant";
 
 export const orderRouter = createTRPCRouter({
-    createOne: protectedProcedure
+    createOne: srProcedure
         .input(OrderSchema)
         .mutation(async ({ input, ctx }) => {
-            const user = ctx.auth
+            const employee = ctx.employee
             const { shopId, orderItems } = input;
 
             try {
@@ -24,10 +23,6 @@ export const orderRouter = createTRPCRouter({
 
                 if (hasDueOrder) {
                     return { success: false, message: "You already have a due order" }
-                }
-
-                if (!user.employee?.id) {
-                    return { success: false, message: "You are not an employee" }
                 }
 
                 const total = orderItems.reduce((acc, item) => {
@@ -46,7 +41,7 @@ export const orderRouter = createTRPCRouter({
                         shopId,
                         total,
                         status: ORDER_STATUS.Placed,
-                        employeeId: user.employee.id,
+                        employeeId: employee.id,
                         orderItems: {
                             createMany: {
                                 data: items
@@ -174,6 +169,64 @@ export const orderRouter = createTRPCRouter({
             });
             return brands;
         }),
+    summaryBySr: srProcedure
+        .input(
+            z.object({
+                date: z.string().optional().nullable(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const employee = ctx.employee;
+            const targetDate = input.date ? new Date(input.date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
+
+            const orderItems = await db.orderItem.findMany({
+                where: {
+                    createdAt: {
+                        gte: dayStart,
+                        lte: dayEnd,
+                    },
+                    order: {
+                        employeeId: employee.id
+                    }
+                },
+                select: {
+                    product: {
+                        select: {
+                            name: true,
+                            id: true
+                        },
+                    },
+                    quantity: true,
+                },
+            })
+
+            const productMap = new Map<string, { id: string; name: string; quantity: number }>();
+
+            for (const item of orderItems) {
+                const { id, name } = item.product;
+                if (productMap.has(id)) {
+                    productMap.get(id)!.quantity += item.quantity;
+                } else {
+                    productMap.set(id, { id, name, quantity: item.quantity });
+                }
+            }
+
+            return Array.from(productMap.values());
+        }),
     summary: protectedProcedure
         .input(
             z.object({
@@ -181,7 +234,6 @@ export const orderRouter = createTRPCRouter({
             })
         )
         .query(async ({ input }) => {
-            const {date} = input
             const targetDate = input.date ? new Date(input.date) : new Date()
 
             const dayStart = new Date(Date.UTC(
@@ -263,6 +315,66 @@ export const orderRouter = createTRPCRouter({
                 }
             });
             return product;
+        }),
+    getManyBySr: srProcedure
+        .input(
+            z.object({
+                page: z.number(),
+                limit: z.number().min(1).max(100),
+                sort: z.string().nullish(),
+                search: z.string().nullish(),
+                status: z.string().nullish(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const employee = ctx.employee
+            const { page, limit, sort, search, status } = input;
+
+            const [orders, totalCount] = await Promise.all([
+                db.order.findMany({
+                    where: {
+                        employeeId: employee.id,
+                        ...(search && {
+                            name: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        }),
+                        ...(status && { status }),
+                    },
+                    include: {
+                        shop: {
+                            select: {
+                                name: true,
+                            }
+                        },
+                        _count: {
+                            select: {
+                                orderItems: true,
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: sort === "asc" ? "asc" : "desc",
+                    },
+                    take: limit,
+                    skip: (page - 1) * limit,
+
+                }),
+                db.order.count({
+                    where: {
+                        employeeId: employee.id,
+                        ...(search && {
+                            name: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        }),
+                        ...(status && { status }),
+                    },
+                }),
+            ]);
+            return { orders, totalCount };
         }),
     getMany: baseProcedure
         .input(

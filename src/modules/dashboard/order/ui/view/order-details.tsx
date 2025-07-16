@@ -42,8 +42,8 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Order Details</h1>
-                        <p className="text-gray-400 mt-1">Order #{order?.id}</p>
+                        <h1 className="text-xl font-bold text-white">Order Details</h1>
+                        <p className="text-gray-400 mt-1">Order #{order?.id.slice(0, 6)}</p>
                     </div>
                     <Badge className={`${getStatusColor(order?.status as string)} text-white px-4 py-2 text-sm font-medium`}>
                         {order?.status}

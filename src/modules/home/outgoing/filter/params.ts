@@ -10,6 +10,7 @@ const filterParmas = {
         .withDefault(DEFAULT_PAGE_SIZE)
         .withOptions({ clearOnDefault: true }),
     sort: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+    date: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
 };
 
 export const outgoingSearchParams = createLoader(filterParmas);

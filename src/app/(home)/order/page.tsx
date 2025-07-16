@@ -36,7 +36,7 @@ const Orders = async ({ searchParams }: Props) => {
 
     const queryClient = getQueryClient()
 
-    void queryClient.prefetchQuery(trpc.order.getMany.queryOptions({
+    void queryClient.prefetchQuery(trpc.order.getManyBySr.queryOptions({
         ...params
     }))
 

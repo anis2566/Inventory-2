@@ -5,14 +5,14 @@ import { Trash2 } from "lucide-react"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 import { cn } from "@/lib/utils";
-import { useDeleteBrand } from "@/hooks/use-brand";
+import { useDeleteOutgoing } from "@/hooks/use-outgoing";
 
 interface DeleteButtonProps {
     id: string
 }
 
 export const DeleteButton = ({ id }: DeleteButtonProps) => {
-    const { onOpen } = useDeleteBrand();
+    const { onOpen } = useDeleteOutgoing();
 
     return (
         <DropdownMenuItem

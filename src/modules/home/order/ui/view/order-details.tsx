@@ -42,8 +42,8 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Order Details</h1>
-                        <p className="text-gray-400 mt-1">Order #{order?.id}</p>
+                        <h1 className="text-xl font-bold text-white">Order Details</h1>
+                        <p className="text-gray-400 mt-1">Order #{order?.id.slice(0, 6)}</p>
                     </div>
                     <Badge className={`${getStatusColor(order?.status as string)} text-white px-4 py-2 text-sm font-medium`}>
                         {order?.status}
@@ -55,7 +55,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Order Items */}
                         <Card className="bg-gray-800 border-gray-700">
-                            <CardHeader className="pb-4">
+                            <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     <Package className="w-5 h-5" />
                                     Order Items
@@ -86,11 +86,11 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                                                 <TableCell className="text-center text-gray-300">
                                                     {item.quantity}
                                                 </TableCell>
-                                                <TableCell className="text-right text-gray-300">
-                                                    {item.price}
+                                                <TableCell className="text-right text-gray-300 font-bengali">
+                                                    ৳{item.price}
                                                 </TableCell>
-                                                <TableCell className="text-right text-white font-medium">
-                                                    {item.total}
+                                                <TableCell className="text-right text-white font-medium font-bengali">
+                                                    ৳{item.total}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -101,7 +101,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
 
                         {/* Shop Information */}
                         <Card className="bg-gray-800 border-gray-700">
-                            <CardHeader className="pb-4">
+                            <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     <MapPin className="w-5 h-5" />
                                     Shop Information
@@ -150,7 +150,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                     <div className="space-y-6">
                         {/* Financial Summary */}
                         <Card className="bg-gray-800 border-gray-700">
-                            <CardHeader className="pb-4">
+                            <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     <CreditCard className="w-5 h-5" />
                                     Payment Summary
@@ -159,12 +159,12 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Subtotal</span>
-                                    <span className="text-white font-medium">{order?.total}</span>
+                                    <span className="text-white font-medium">৳{order?.total}</span>
                                 </div>
                                 <Separator className="bg-gray-600" />
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Total</span>
-                                    <span className="text-white font-semibold text-lg">{order?.total}</span>
+                                    <span className="text-white font-semibold text-lg">৳{order?.total}</span>
                                 </div>
                                 {/* <div className="flex justify-between">
                   <span className="text-gray-400">Paid</span>
@@ -181,7 +181,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
 
                         {/* Order Timeline */}
                         <Card className="bg-gray-800 border-gray-700">
-                            <CardHeader className="pb-4">
+                            <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     <Clock className="w-5 h-5" />
                                     Order Timeline
@@ -208,7 +208,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
 
                         {/* Quick Stats */}
                         <Card className="bg-gray-800 border-gray-700">
-                            <CardHeader className="pb-4">
+                            <CardHeader>
                                 <CardTitle className="text-white">Quick Stats</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">

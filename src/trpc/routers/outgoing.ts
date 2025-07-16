@@ -1,42 +1,81 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
+import { adminProcedure, createTRPCRouter, srProcedure } from "../init";
 import { db } from "@/lib/db";
-import { BrandSchema } from "@/schema/brand";
 import { OutgoingSchema } from "@/schema/outgoing";
 
 export const outgoingRouter = createTRPCRouter({
-    createOne: protectedProcedure
+    createOne: srProcedure
         .input(OutgoingSchema)
         .mutation(async ({ input, ctx }) => {
-            const user = ctx.auth
-            const {items} = input;
+            const employee = ctx.employee
+            const { items } = input;
 
             try {
-                if(!user.employee?.id) {
-                    return { success: false, message: "You are not an employee" }
+                const productIds = items.map((item) => item.productId);
+
+                const products = await db.product.findMany({
+                    where: {
+                        id: { in: productIds }
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        stock: true,
+                    }
+                });
+
+                const productMap = new Map(products.map(p => [p.id, p]));
+
+                for (const item of items) {
+                    const product = productMap.get(item.productId);
+                    const requiredQty = Number(item.quantity);
+
+                    if (!product) {
+                        return {
+                            success: false,
+                            message: `Product with ID ${item.productId} not found.`,
+                        };
+                    }
+
+                    if (product.stock < requiredQty) {
+                        return {
+                            success: false,
+                            message: `Insufficient stock for "${product.name}". Available: ${product.stock}, Required: ${requiredQty}`,
+                        };
+                    }
                 }
 
-                const total = items.reduce((acc, item) => {
-                    return acc + parseInt(item.quantity)
-                }, 0)
+                const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
                     productId: item.productId
                 }))
 
-                await db.outgoing.create({
-                    data: {
-                        employeeId: user.employee.id,
-                        items: {
-                            createMany: {
-                                data: formatedItems
-                            }
+                await db.$transaction(async (tx) => {
+                    await tx.outgoing.create({
+                        data: {
+                            employeeId: employee.id,
+                            items: {
+                                createMany: {
+                                    data: formatedItems
+                                }
+                            },
+                            total
                         },
-                        total
-                    },
-                });
+                    });
+                    for (const item of formatedItems) {
+                        await tx.product.update({
+                            where: { id: item.productId },
+                            data: {
+                                stock: {
+                                    decrement: item.quantity
+                                }
+                            }
+                        })
+                    }
+                })
 
                 return { success: true, message: "Outgoing created" }
             } catch (error) {
@@ -44,41 +83,112 @@ export const outgoingRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
-                ...BrandSchema.shape,
+                ...OutgoingSchema.shape,
             })
         )
         .mutation(async ({ input }) => {
-            const { id, name, description, status } = input;
+            const { id, items } = input;
 
             try {
-                const existingBrand = await db.brand.findUnique({
+                const existingOutgoing = await db.outgoing.findUnique({
                     where: { id },
+                    include: { items: true },
                 });
 
-                if (!existingBrand) {
-                    return { success: false, message: "Brand not found" }
+                if (!existingOutgoing) {
+                    return { success: false, message: "Outgoing record not found" };
                 }
 
-                await db.brand.update({
-                    where: { id },
-                    data: {
-                        name,
-                        description,
-                        status
-                    },
+                const productIds = items.map((item) => item.productId);
+
+                const products = await db.product.findMany({
+                    where: { id: { in: productIds } },
+                    select: {
+                        id: true,
+                        name: true,
+                        stock: true,
+                    }
                 });
 
-                return { success: true, message: "Brand updated" }
+                const productMap = new Map(products.map(p => [p.id, p]));
+
+                for (const item of items) {
+                    const product = productMap.get(item.productId);
+                    const requiredQty = Number(item.quantity);
+
+                    if (!product) {
+                        return {
+                            success: false,
+                            message: `Product with ID ${item.productId} not found.`,
+                        };
+                    }
+
+                    if (product.stock < requiredQty) {
+                        return {
+                            success: false,
+                            message: `Insufficient stock for "${product.name}". Available: ${product.stock}, Required: ${requiredQty}`,
+                        };
+                    }
+                }
+
+                const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
+
+                const formatedItems = items.map((item) => ({
+                    quantity: Number(item.quantity),
+                    productId: item.productId
+                }));
+
+                await db.$transaction(async (tx) => {
+                    for (const oldItem of existingOutgoing.items) {
+                        await tx.product.update({
+                            where: { id: oldItem.productId },
+                            data: {
+                                stock: {
+                                    increment: oldItem.quantity,
+                                },
+                            },
+                        });
+                    }
+
+                    await tx.outgoingItem.deleteMany({
+                        where: { outgoingId: id },
+                    });
+
+                    await tx.outgoing.update({
+                        where: { id },
+                        data: {
+                            total,
+                            items: {
+                                createMany: {
+                                    data: formatedItems,
+                                },
+                            },
+                        },
+                    });
+
+                    for (const item of formatedItems) {
+                        await tx.product.update({
+                            where: { id: item.productId },
+                            data: {
+                                stock: {
+                                    decrement: item.quantity,
+                                },
+                            },
+                        });
+                    }
+                })
+
+                return { success: true, message: "Outgoing updated" };
             } catch (error) {
-                console.error("Error updating brand", error);
+                console.error("Error updating outgoing", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -86,25 +196,25 @@ export const outgoingRouter = createTRPCRouter({
             const { id } = input;
 
             try {
-                const existingBrand = await db.brand.findUnique({
+                const existingOutgoing = await db.outgoing.findUnique({
                     where: { id },
                 });
 
-                if (!existingBrand) {
-                    return { success: false, message: "Brand not found" }
+                if (!existingOutgoing) {
+                    return { success: false, message: "Outgoing not found" }
                 }
 
-                await db.brand.delete({
+                await db.outgoing.delete({
                     where: { id },
                 });
 
-                return { success: true, message: "Brand deleted" }
+                return { success: true, message: "Outgoing deleted" }
             } catch (error) {
-                console.error("Error deleting brand", error);
+                console.error("Error deleting outgoing", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -113,7 +223,7 @@ export const outgoingRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             const { ids } = input;
             try {
-                await db.brand.deleteMany({
+                await db.outgoing.deleteMany({
                     where: {
                         id: {
                             in: ids,
@@ -123,41 +233,55 @@ export const outgoingRouter = createTRPCRouter({
 
                 return {
                     success: true,
-                    message: "Brands deleted successfully",
+                    message: "Outgoings deleted successfully",
                 };
             } catch (error) {
-                console.error(`Error deleting brands: ${error}`);
+                console.error(`Error deleting outgoing: ${error}`);
                 return {
                     success: false,
                     message: "Internal Server Error",
                 };
             }
         }),
-    forSelect: baseProcedure
+    getOneBySr: srProcedure
         .input(
             z.object({
-                search: z.string().nullish(),
+                id: z.string(),
             })
         )
-        .query(async ({ input }) => {
-            const { search } = input;
-            const brands = await db.brand.findMany({
+        .query(async ({ input, ctx }) => {
+            const employee = ctx.employee
+
+            const { id } = input;
+            const outgoing = await db.outgoing.findUnique({
                 where: {
-                    ...(search && {
-                        name: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
-                    }),
+                    employeeId: employee.id,
+                    id,
                 },
-                select: {
-                    id: true,
-                    name: true,
-                },
+                include: {
+                    items: {
+                        include: {
+                            product: {
+                                select: {
+                                    category: {
+                                        select: {
+                                            name: true
+                                        }
+                                    },
+                                    name: true,
+                                    description: true,
+                                    price: true,
+                                    productCode: true
+                                }
+                            }
+                        }
+                    },
+                    employee: true
+                }
             });
-            return brands;
+            return outgoing;
         }),
-    getOne: baseProcedure
+    getOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -165,36 +289,78 @@ export const outgoingRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { id } = input;
-            const brand = await db.brand.findUnique({
+            const outgoing = await db.outgoing.findUnique({
                 where: {
                     id,
                 },
+                include: {
+                    items: {
+                        include: {
+                            product: {
+                                select: {
+                                    category: {
+                                        select: {
+                                            name: true
+                                        }
+                                    },
+                                    name: true,
+                                    description: true,
+                                    price: true,
+                                    productCode: true,
+                                    id: true
+                                }
+                            }
+                        }
+                    },
+                    employee: true
+                }
             });
-            return brand;
+            return outgoing;
         }),
-    getMany: baseProcedure
+    getManyBySr: srProcedure
         .input(
             z.object({
+                date: z.string().optional().nullable(),
                 page: z.number(),
                 limit: z.number().min(1).max(100),
                 sort: z.string().nullish(),
-                search: z.string().nullish(),
-                status: z.string().nullish(),
             })
         )
-        .query(async ({ input }) => {
-            const { page, limit, sort, search, status } = input;
+        .query(async ({ input, ctx }) => {
+            const employee = ctx.employee
+            const { date, page, limit, sort, } = input;
 
-            const [brands, totalCount] = await Promise.all([
-                db.brand.findMany({
+            const targetDate = date ? new Date(date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
+
+            const [outgoings, totalCount] = await Promise.all([
+                db.outgoing.findMany({
                     where: {
-                        ...(search && {
-                            name: {
-                                contains: search,
-                                mode: "insensitive",
-                            },
-                        }),
-                        ...(status && { status }),
+                        employeeId: employee.id,
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        }
+                    },
+                    include: {
+                        _count: {
+                            select: {
+                                items: true
+                            }
+                        }
                     },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
@@ -203,18 +369,99 @@ export const outgoingRouter = createTRPCRouter({
                     skip: (page - 1) * limit,
 
                 }),
-                db.brand.count({
+                db.outgoing.count({
                     where: {
-                        ...(search && {
-                            name: {
-                                contains: search,
-                                mode: "insensitive",
-                            },
-                        }),
-                        ...(status && { status }),
+                        employeeId: employee.id,
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        }
                     },
                 }),
             ]);
-            return { brands, totalCount };
+            return { outgoings, totalCount };
+        }),
+    getMany: adminProcedure
+        .input(
+            z.object({
+                date: z.string().optional().nullable(),
+                page: z.number(),
+                limit: z.number().min(1).max(100),
+                sort: z.string().nullish(),
+                employee: z.string().nullish(),
+            })
+        )
+        .query(async ({ input }) => {
+            const { page, limit, sort, employee, date } = input;
+
+            const targetDate = date ? new Date(date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
+
+            const [outgoings, totalCount] = await Promise.all([
+                db.outgoing.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        },
+                        ...(employee && {
+                            employee: {
+                                name: {
+                                    contains: employee,
+                                    mode: "insensitive",
+                                }
+                            }
+                        }),
+                    },
+                    include: {
+                        employee: {
+                            select: {
+                                name: true
+                            }
+                        },
+                        _count: {
+                            select: {
+                                items: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: sort === "asc" ? "asc" : "desc",
+                    },
+                    take: limit,
+                    skip: (page - 1) * limit,
+
+                }),
+                db.outgoing.count({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        },
+                        ...(employee && {
+                            employee: {
+                                name: {
+                                    contains: employee,
+                                    mode: "insensitive",
+                                }
+                            }
+                        }),
+                    },
+                }),
+            ]);
+            return { outgoings, totalCount };
         }),
 })
