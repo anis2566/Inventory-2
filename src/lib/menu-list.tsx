@@ -3,18 +3,8 @@ import {
     LucideIcon,
     List,
     PlusCircle,
-    DollarSign,
-    School,
-    BookOpen,
     Layers3,
-    ClipboardPen,
-    CreditCard,
-    NotebookPen,
-    HandCoins,
     NotebookText,
-    WavesLadder,
-    Cable,
-    Megaphone,
     Ribbon,
     Package,
     Users,
@@ -23,6 +13,7 @@ import {
     LogOut,
     Store,
     LogIn,
+    NotepadTextDashed,
 } from "lucide-react";
 
 type Submenu = {
@@ -310,6 +301,31 @@ export function getUserMenuList(pathname: string): Group[] {
                             label: "List",
                             active: pathname === "/incoming",
                             icon: List,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            groupLabel: "Report",
+            menus: [
+                {
+                    href: "",
+                    label: "Sales",
+                    active: pathname.includes("/report"),
+                    icon: ShoppingBag,
+                    submenus: [
+                        {
+                            href: "/report/daily",
+                            label: "Daily",
+                            active: pathname === "/report/daily",
+                            icon: NotepadTextDashed,
+                        },
+                        {
+                            href: "/report",
+                            label: "Overview",
+                            active: pathname === "/report",
+                            icon: NotepadTextDashed,
                         },
                     ],
                 },

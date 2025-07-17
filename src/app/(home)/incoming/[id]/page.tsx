@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { SearchParams } from "nuqs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -12,47 +11,48 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
 import Loader from "@/components/loader";
 import { ErrorBoundryUI } from "@/components/error-boundary";
 
-import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
 import { getQueryClient, trpc } from "@/trpc/server";
-import { incomingSearchParams } from "@/modules/home/incoming/filter/params";
-import { IncomingList } from "@/modules/home/incoming/ui/view/incoming-list";
+import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
+import { IncomingDetails } from "@/modules/home/incoming/ui/view/incoming-details";
 
 export const metadata: Metadata = {
-    title: "Incomings",
-    description: "Incomings",
+    title: "Incoming details",
+    description: "Incoming details",
 };
 
 interface Props {
-    searchParams: Promise<SearchParams>;
+    params: Promise<{ id: string }>;
 }
 
-const Incomings = async ({ searchParams }: Props) => {
-    const params = await incomingSearchParams(searchParams);
+const Incoming = async ({ params }: Props) => {
+    const { id } = await params;
 
-    const queryClient = getQueryClient()
+    const queryClient = getQueryClient();
 
-    void queryClient.prefetchQuery(trpc.incoming.getManyBySr.queryOptions({
-        ...params
-    }))
+    void queryClient.prefetchQuery(
+        trpc.incoming.getOneBySr.queryOptions({
+            id,
+        })
+    );
 
     return (
         <ContentLayout navChildren={<NavChildren />}>
             <HydrationBoundary state={dehydrate(queryClient)}>
                 <Suspense fallback={<Loader />}>
                     <ErrorBoundary fallback={<ErrorBoundryUI />}>
-                        <IncomingList />
+                        <IncomingDetails id={id} />
                     </ErrorBoundary>
                 </Suspense>
             </HydrationBoundary>
         </ContentLayout>
-    )
-}
+    );
+};
 
-export default Incomings
+export default Incoming;
 
 const NavChildren = () => {
     return (
@@ -60,16 +60,20 @@ const NavChildren = () => {
             <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/">
-                            Dashboard
-                        </Link>
+                        <Link href="/">Dashboard</Link>
+                    </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink asChild>
+                        <Link href="/incoming">Incoming</Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                    <BreadcrumbPage>Incomings</BreadcrumbPage>
+                    <BreadcrumbPage>Details</BreadcrumbPage>
                 </BreadcrumbItem>
             </BreadcrumbList>
         </Breadcrumb>
-    )
-}
+    );
+};

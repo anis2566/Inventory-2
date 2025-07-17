@@ -46,6 +46,7 @@ export const IncomingForm = () => {
     const [productId, setProductId] = useState("")
     const [quantity, setQuantity] = useState("")
     const [reason, setReason] = useState("")
+    const [price, setPrice] = useState("")
     const [openProduct, setOpenProduct] = useState(false)
 
     const [filter] = useIncomingFilter()
@@ -71,6 +72,9 @@ export const IncomingForm = () => {
                     ...filter,
                 })
             );
+            queryClient.invalidateQueries(
+                trpc.sellReport.daily.queryOptions()
+            );
             router.push("/incoming");
         },
     }))
@@ -83,9 +87,9 @@ export const IncomingForm = () => {
     })
 
     const handleAddProduct = () => {
-        if (!productId || !quantity || !product || !reason) return
+        if (!productId || !quantity || !product || !reason || !price) return
 
-        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product, reason }])
+        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product, reason, price }])
 
         form.trigger("items")
         setProductId("")
@@ -123,8 +127,8 @@ export const IncomingForm = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Add Outgoing</CardTitle>
-                <CardDescription>Add your outgoing details below</CardDescription>
+                <CardTitle>Add Incoming</CardTitle>
+                <CardDescription>Add your incoming details below</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -166,6 +170,7 @@ export const IncomingForm = () => {
                                                         onSelect={() => {
                                                             setProduct(p.name);
                                                             setProductId(p.id);
+                                                            setPrice(p.price.toString());
                                                             setOpenProduct(false);
                                                         }}
                                                         className="text-gray-400 data-[selected=true]:bg-gray-600 data-[selected=true]:text-white text-white"

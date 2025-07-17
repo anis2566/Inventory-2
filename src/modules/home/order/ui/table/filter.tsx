@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-import { CircleX, Trash2 } from "lucide-react";
+import { CircleX } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -70,17 +70,6 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
         filter.sort !== "" ||
         filter.status !== "";
 
-    const isMultipleSelected =
-        table.getIsSomeRowsSelected() || table.getIsAllRowsSelected();
-
-    const onClick = () => {
-        const selectedIds = table
-            .getSelectedRowModel()
-            .rows.map((row) => row.original.id || "");
-
-        onOpen(selectedIds);
-    };
-
     return (
         <div className="w-full flex items-center justify-between">
             <div className="hidden md:flex items-center gap-4">
@@ -128,16 +117,6 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
                     >
                         <CircleX />
                         Clear
-                    </Button>
-                )}
-                {isMultipleSelected && (
-                    <Button
-                        variant="outline"
-                        className="text-red-500"
-                        onClick={onClick}
-                    >
-                        <Trash2 />
-                        Delete
                     </Button>
                 )}
             </div>

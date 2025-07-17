@@ -63,8 +63,8 @@ export function DataTable<TData extends HasId, TValue>({
     return (
         <div className="border p-3 space-y-4 bg-gray-800 border-gray-700">
             <div>
-                <h1 className="text-xl font-semibold text-white">Outgoing List</h1>
-                <p className="text-sm text-gray-400">{totalCount} outgoing found</p>
+                <h1 className="text-xl font-semibold text-white">Incoming List</h1>
+                <p className="text-sm text-gray-400">{totalCount} incomings found</p>
             </div>
             <Filter table={table} />
             <Table>

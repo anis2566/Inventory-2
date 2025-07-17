@@ -12,7 +12,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { Outgoing } from "@/generated/prisma";
 
@@ -25,26 +24,6 @@ type OutgoingOmit = Omit<Outgoing, "createdAt" | "updatedAt"> & {
 };
 
 export const columns: ColumnDef<OutgoingOmit>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-    },
     {
         accessorKey: "date",
         header: "Date",
@@ -61,7 +40,14 @@ export const columns: ColumnDef<OutgoingOmit>[] = [
         accessorKey: "quantity",
         header: "T. Quantity",
         cell: ({ row }) => (
-            <p className="truncate">{row.original.total}</p>
+            <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "total amount",
+        header: "T. Amount",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali">৳{row.original.total}</p>
         )
     },
     {

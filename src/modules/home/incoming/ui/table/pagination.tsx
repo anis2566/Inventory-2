@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { DEFAULT_PAGE_SIZE_OPTIONS } from "@/constant";
-import { useOutgoingFilter } from "../../filter/use-incoming-filter";
+import { useIncomingFilter } from "../../filter/use-incoming-filter";
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>;
@@ -28,7 +28,7 @@ export function DataTablePagination<TData>({
     table,
     totalCount,
 }: DataTablePaginationProps<TData>) {
-    const [filter, setFilter] = useOutgoingFilter();
+    const [filter, setFilter] = useIncomingFilter();
 
     const numberOfPages = Math.ceil(totalCount / filter.limit);
 

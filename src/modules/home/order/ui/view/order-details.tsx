@@ -159,12 +159,12 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Subtotal</span>
-                                    <span className="text-white font-medium">৳{order?.total}</span>
+                                    <span className="text-white font-medium">৳{order?.totalAmount}</span>
                                 </div>
                                 <Separator className="bg-gray-600" />
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Total</span>
-                                    <span className="text-white font-semibold text-lg">৳{order?.total}</span>
+                                    <span className="text-white font-semibold text-lg">৳{order?.totalAmount}</span>
                                 </div>
                                 {/* <div className="flex justify-between">
                   <span className="text-gray-400">Paid</span>

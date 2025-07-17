@@ -6,6 +6,7 @@ import { Check, ChevronsUpDown, Plus, PlusCircle, Send, Trash2 } from "lucide-re
 import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -28,7 +29,6 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 
 import { useTRPC } from "@/trpc/client"
 import { OrderSchema, OrderSchemaType } from "@/schema/order"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useCreateShop } from "@/hooks/use-shop"
 import { useOrderFilter } from "../../filter/use-order-filter"
@@ -325,7 +325,7 @@ export const OrderForm = () => {
                                     }
                                 </TableBody>
                                 <TableFooter className={cn("", form.watch().orderItems.length === 0 && "hidden")}>
-                                    <TableRow className="bg-gray-700">
+                                    <TableRow className="bg-gray-800 hover:bg-gray-800">
                                         <TableHead className="w-[100px]" colSpan={3}>Total</TableHead>
                                         <TableHead className="w-[100px]">{form.watch().orderItems.reduce((total, product) => total + Number(product.quantity) * Number(product.price), 0)}</TableHead>
                                         <TableHead className="w-[100px]"></TableHead>
@@ -338,7 +338,7 @@ export const OrderForm = () => {
                             type="submit"
                             title="Submit"
                             loadingTitle="Submitting..."
-                            isLoading={false}
+                            isLoading={isPending}
                             onClick={form.handleSubmit(onSubmit)}
                             variant="gray"
                             disabled={form.watch().orderItems.length === 0}

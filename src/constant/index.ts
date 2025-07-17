@@ -31,6 +31,7 @@ export enum ORDER_STATUS {
     Shipped = 'Shipped',
     Delivered = 'Delivered',
     Due = 'Due',
+    Received = 'Received',
     Cancelled = 'Cancelled'
 }
 

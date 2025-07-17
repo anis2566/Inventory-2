@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -10,37 +11,50 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { ErrorBoundryUI } from "@/components/error-boundary";
+} from "@/components/ui/breadcrumb";
 import Loader from "@/components/loader";
+import { ErrorBoundryUI } from "@/components/error-boundary";
 
 import { getQueryClient, trpc } from "@/trpc/server";
 import { ContentLayout } from "@/modules/home/ui/view/content-layout";
-import { OrderForm } from "@/modules/home/order/ui/view/order-form";
+import { EditOrderForm } from "@/modules/home/order/ui/view/edit-order-form";
 
 export const metadata: Metadata = {
-    title: "New Order",
-    description: "New Order",
+    title: "Edit Order",
+    description: "Edit Order",
 };
 
-const NewOrder = async () => {
-    const queryClient = getQueryClient()
+interface Props {
+    params: Promise<{ id: string }>;
+}
 
+const EditOrder = async ({ params }: Props) => {
+    const { id } = await params;
+
+    const queryClient = getQueryClient();
+
+    void queryClient.prefetchQuery(
+        trpc.order.getOne.queryOptions({
+            id,
+        })
+    );
     void queryClient.prefetchQuery(trpc.shop.forSelect.queryOptions({ search: "" }));
     void queryClient.prefetchQuery(trpc.product.forSelect.queryOptions({ search: "" }));
 
     return (
         <ContentLayout navChildren={<NavChildren />}>
-            <Suspense fallback={<Loader />}>
-                <ErrorBoundary fallback={<ErrorBoundryUI />}>
-                    <OrderForm />
-                </ErrorBoundary>
-            </Suspense>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Suspense fallback={<Loader />}>
+                    <ErrorBoundary fallback={<ErrorBoundryUI />}>
+                        <EditOrderForm id={id} />
+                    </ErrorBoundary>
+                </Suspense>
+            </HydrationBoundary>
         </ContentLayout>
-    )
-}
+    );
+};
 
-export default NewOrder
+export default EditOrder;
 
 const NavChildren = () => {
     return (
@@ -48,24 +62,20 @@ const NavChildren = () => {
             <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/">
-                            Dashboard
-                        </Link>
+                        <Link href="/">Dashboard</Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/order">
-                            Orders
-                        </Link>
+                        <Link href="/order">Orders</Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                    <BreadcrumbPage>New</BreadcrumbPage>
+                    <BreadcrumbPage>Edit</BreadcrumbPage>
                 </BreadcrumbItem>
             </BreadcrumbList>
         </Breadcrumb>
-    )
-}
+    );
+};

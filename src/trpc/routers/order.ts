@@ -1,8 +1,7 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
+import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
-import { BrandSchema } from "@/schema/brand";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS } from "@/constant";
 
@@ -29,6 +28,10 @@ export const orderRouter = createTRPCRouter({
                     return acc + parseFloat(item.price) * parseInt(item.quantity)
                 }, 0)
 
+                const totalQuantity = orderItems.reduce((acc, item) => {
+                    return acc + parseInt(item.quantity)
+                }, 0)
+
                 const items = orderItems.map((item) => ({
                     quantity: Number(item.quantity),
                     productId: item.productId,
@@ -39,7 +42,8 @@ export const orderRouter = createTRPCRouter({
                 await db.order.create({
                     data: {
                         shopId,
-                        total,
+                        totalQuantity,
+                        totalAmount: total,
                         status: ORDER_STATUS.Placed,
                         employeeId: employee.id,
                         orderItems: {
@@ -56,41 +60,128 @@ export const orderRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOneBySr: srProcedure
         .input(
             z.object({
                 id: z.string(),
-                ...BrandSchema.shape,
+                ...OrderSchema.shape,
             })
         )
-        .mutation(async ({ input }) => {
-            const { id, name, description, status } = input;
+        .mutation(async ({ input, ctx }) => {
+            const employee = ctx.employee
+            const { id, orderItems } = input;
 
             try {
-                const existingBrand = await db.brand.findUnique({
-                    where: { id },
+                const existingOrder = await db.order.findUnique({
+                    where: { id, employeeId: employee.id },
+                    include: {
+                        orderItems: {
+                            include: {
+                                product: true,
+                            }
+                        }
+                    }
                 });
 
-                if (!existingBrand) {
-                    return { success: false, message: "Brand not found" }
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
                 }
 
-                await db.brand.update({
-                    where: { id },
-                    data: {
-                        name,
-                        description,
-                        status
-                    },
-                });
+                if (existingOrder.status !== ORDER_STATUS.Placed) {
+                    return { success: false, message: "Order cannot be updated" }
+                }
 
-                return { success: true, message: "Brand updated" }
+                const total = orderItems.reduce((acc, item) => {
+                    return acc + parseFloat(item.price) * parseInt(item.quantity)
+                }, 0)
+
+                const totalQuantity = orderItems.reduce((acc, item) => {
+                    return acc + parseInt(item.quantity)
+                }, 0)
+
+                const items = orderItems.map((item) => ({
+                    quantity: Number(item.quantity),
+                    productId: item.productId,
+                    total: Number(item.price) * Number(item.quantity),
+                    price: Number(item.price)
+                }))
+
+                await db.$transaction(async (tx) => {
+                    await tx.orderItem.deleteMany({
+                        where: { orderId: id },
+                    });
+                    await tx.order.update({
+                        where: { id },
+                        data: {
+                            totalAmount: total,
+                            totalQuantity,
+                            orderItems: {
+                                createMany: {
+                                    data: items
+                                }
+                            }
+                        }
+                    })
+                })
+
+                return { success: true, message: "Order updated" }
             } catch (error) {
-                console.error("Error updating brand", error);
+                console.error("Error updating order", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    statusBySr: srProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                status: z.enum(ORDER_STATUS),
+                dueAmount: z.string().nullish()
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, status, dueAmount } = input;
+
+            try {
+                const existingOrder = await db.order.findUnique({
+                    where: { id },
+                })
+
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
+                }
+
+                if (existingOrder.status === ORDER_STATUS.Received && status === ORDER_STATUS.Due) {
+                    return { success: false, message: "Order already received" }
+                }
+
+                if (status === ORDER_STATUS.Due && dueAmount) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            status,
+                            paidAmount: existingOrder.totalAmount - Number(dueAmount),
+                            dueAmount: Number(dueAmount),
+                        }
+                    })
+                } else {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            status,
+                            paidAmount: existingOrder.totalAmount,
+                            dueAmount: 0
+                        }
+                    })
+                }
+
+                return { success: true, message: "Order updated" }
+            } catch (error) {
+                console.error("Error updating order", error);
+                return { success: false, message: "Internal Server Error" }
+            }
+
+        }),
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -98,25 +189,25 @@ export const orderRouter = createTRPCRouter({
             const { id } = input;
 
             try {
-                const existingBrand = await db.brand.findUnique({
+                const existingOrder = await db.order.findUnique({
                     where: { id },
                 });
 
-                if (!existingBrand) {
-                    return { success: false, message: "Brand not found" }
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
                 }
 
-                await db.brand.delete({
+                await db.order.delete({
                     where: { id },
                 });
 
-                return { success: true, message: "Brand deleted" }
+                return { success: true, message: "Order deleted" }
             } catch (error) {
-                console.error("Error deleting brand", error);
+                console.error("Error deleting order", error);
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -125,7 +216,7 @@ export const orderRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             const { ids } = input;
             try {
-                await db.brand.deleteMany({
+                await db.order.deleteMany({
                     where: {
                         id: {
                             in: ids,
@@ -135,39 +226,15 @@ export const orderRouter = createTRPCRouter({
 
                 return {
                     success: true,
-                    message: "Brands deleted successfully",
+                    message: "Orders deleted successfully",
                 };
             } catch (error) {
-                console.error(`Error deleting brands: ${error}`);
+                console.error(`Error deleting orders: ${error}`);
                 return {
                     success: false,
                     message: "Internal Server Error",
                 };
             }
-        }),
-    forSelect: baseProcedure
-        .input(
-            z.object({
-                search: z.string().nullish(),
-            })
-        )
-        .query(async ({ input }) => {
-            const { search } = input;
-            const brands = await db.brand.findMany({
-                where: {
-                    ...(search && {
-                        name: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
-                    }),
-                },
-                select: {
-                    id: true,
-                    name: true,
-                },
-            });
-            return brands;
         }),
     summaryBySr: srProcedure
         .input(
@@ -207,27 +274,28 @@ export const orderRouter = createTRPCRouter({
                     product: {
                         select: {
                             name: true,
-                            id: true
+                            id: true,
+                            price: true
                         },
                     },
                     quantity: true,
                 },
             })
 
-            const productMap = new Map<string, { id: string; name: string; quantity: number }>();
+            const productMap = new Map<string, { id: string; name: string; quantity: number, price: number }>();
 
             for (const item of orderItems) {
                 const { id, name } = item.product;
                 if (productMap.has(id)) {
                     productMap.get(id)!.quantity += item.quantity;
                 } else {
-                    productMap.set(id, { id, name, quantity: item.quantity });
+                    productMap.set(id, { id, name, quantity: item.quantity, price: item.product.price });
                 }
             }
 
             return Array.from(productMap.values());
         }),
-    summary: protectedProcedure
+    summary: adminProcedure
         .input(
             z.object({
                 date: z.string().optional().nullable(),
@@ -277,7 +345,7 @@ export const orderRouter = createTRPCRouter({
 
             return Array.from(productMap, ([name, quantity]) => ({ name, quantity }))
         }),
-    getOne: baseProcedure
+    getOne: protectedProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -285,36 +353,29 @@ export const orderRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { id } = input;
-            const product = await db.order.findUnique({
+            const order = await db.order.findUnique({
                 where: {
                     id,
                 },
                 include: {
-                    employee: {
-                        select: {
-                            name: true
+                    orderItems: {
+                        include: {
+                            product: true,
                         }
                     },
                     shop: {
                         select: {
-                            name: true,
-                            address: true,
-                            phone: true
+                            name: true
                         }
                     },
-                    orderItems: {
-                        include: {
-                            product: {
-                                select: {
-                                    name: true,
-                                    productCode: true
-                                }
-                            }
+                    employee: {
+                        select: {
+                            name: true
                         }
                     }
                 }
             });
-            return product;
+            return order;
         }),
     getManyBySr: srProcedure
         .input(
@@ -352,7 +413,7 @@ export const orderRouter = createTRPCRouter({
                             select: {
                                 orderItems: true,
                             }
-                        }
+                        },
                     },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
@@ -376,7 +437,7 @@ export const orderRouter = createTRPCRouter({
             ]);
             return { orders, totalCount };
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

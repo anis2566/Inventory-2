@@ -13,7 +13,9 @@ export const incominggRouter = createTRPCRouter({
             const { items } = input;
 
             try {
-                const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
+                const total = items.reduce((acc, item) => acc + Number(item.quantity) * Number(item.price), 0);
+
+                const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
@@ -26,6 +28,7 @@ export const incominggRouter = createTRPCRouter({
                         data: {
                             employeeId: employee.id,
                             total,
+                            totalQuantity,
                             items: {
                                 createMany: {
                                     data: formatedItems
@@ -88,6 +91,8 @@ export const incominggRouter = createTRPCRouter({
 
                 const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
+                const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
+
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
                     productId: item.productId,
@@ -114,6 +119,7 @@ export const incominggRouter = createTRPCRouter({
                         where: { id },
                         data: {
                             total,
+                            totalQuantity,
                             items: {
                                 createMany: {
                                     data: formatedItems,
@@ -211,6 +217,23 @@ export const incominggRouter = createTRPCRouter({
                     id,
                 },
                 include: {
+                    items: {
+                        include: {
+                            product: {
+                                select: {
+                                    category: {
+                                        select: {
+                                            name: true
+                                        }
+                                    },
+                                    name: true,
+                                    description: true,
+                                    price: true,
+                                    productCode: true
+                                }
+                            }
+                        }
+                    },
                     employee: true
                 }
             });
@@ -285,10 +308,12 @@ export const incominggRouter = createTRPCRouter({
                 db.incoming.findMany({
                     where: {
                         employeeId: employee.id,
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        }
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        })
                     },
                     include: {
                         _count: {
@@ -307,10 +332,12 @@ export const incominggRouter = createTRPCRouter({
                 db.incoming.count({
                     where: {
                         employeeId: employee.id,
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        }
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        })
                     },
                 }),
             ]);

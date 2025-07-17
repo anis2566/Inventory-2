@@ -46,7 +46,9 @@ export const outgoingRouter = createTRPCRouter({
                     }
                 }
 
-                const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
+                const total = items.reduce((acc, item) => acc + Number(item.quantity) * Number(item.price), 0);
+
+                const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
@@ -62,7 +64,8 @@ export const outgoingRouter = createTRPCRouter({
                                     data: formatedItems
                                 }
                             },
-                            total
+                            total,
+                            totalQuantity
                         },
                     });
                     for (const item of formatedItems) {
@@ -137,6 +140,8 @@ export const outgoingRouter = createTRPCRouter({
 
                 const total = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
+                const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
+
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
                     productId: item.productId
@@ -162,6 +167,7 @@ export const outgoingRouter = createTRPCRouter({
                         where: { id },
                         data: {
                             total,
+                            totalQuantity,
                             items: {
                                 createMany: {
                                     data: formatedItems,
@@ -350,10 +356,12 @@ export const outgoingRouter = createTRPCRouter({
                 db.outgoing.findMany({
                     where: {
                         employeeId: employee.id,
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        }
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        })
                     },
                     include: {
                         _count: {
@@ -372,10 +380,12 @@ export const outgoingRouter = createTRPCRouter({
                 db.outgoing.count({
                     where: {
                         employeeId: employee.id,
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        }
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        })
                     },
                 }),
             ]);

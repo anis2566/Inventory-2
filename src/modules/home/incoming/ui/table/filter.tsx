@@ -2,7 +2,8 @@
 
 import { Table } from "@tanstack/react-table";
 import { useState } from "react";
-import { CalendarIcon, CircleX, Trash2 } from "lucide-react";
+import { CalendarIcon, CircleX } from "lucide-react";
+import { format } from "date-fns";
 
 import {
     Select,
@@ -25,9 +26,7 @@ import {
     DEFAULT_PAGE_SIZE,
     DEFAULT_SORT_OPTIONS,
 } from "@/constant";
-import { useDeleteManyBrand } from "@/hooks/use-brand";
-import { useOutgoingFilter } from "../../filter/use-incoming-filter";
-import { format } from "date-fns";
+import { useIncomingFilter } from "../../filter/use-incoming-filter";
 
 interface HasId {
     id: string;
@@ -40,8 +39,7 @@ interface FilterProps<TData extends HasId> {
 export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
     const [date, setDate] = useState<Date>()
 
-    const { onOpen } = useDeleteManyBrand();
-    const [filter, setFilter] = useOutgoingFilter();
+    const [filter, setFilter] = useIncomingFilter();
 
     const handleSortChange = (value: string) => {
         setFilter({ sort: value });
@@ -61,17 +59,6 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
         filter.page !== 1 ||
         filter.sort !== "" ||
         filter.date !== "";
-
-    const isMultipleSelected =
-        table.getIsSomeRowsSelected() || table.getIsAllRowsSelected();
-
-    const onClick = () => {
-        const selectedIds = table
-            .getSelectedRowModel()
-            .rows.map((row) => row.original.id || "");
-
-        onOpen(selectedIds);
-    };
 
     return (
         <div className="w-full flex items-center justify-between">
@@ -125,16 +112,6 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
                     >
                         <CircleX />
                         Clear
-                    </Button>
-                )}
-                {isMultipleSelected && (
-                    <Button
-                        variant="outline"
-                        className="text-red-500"
-                        onClick={onClick}
-                    >
-                        <Trash2 />
-                        Delete
                     </Button>
                 )}
             </div>

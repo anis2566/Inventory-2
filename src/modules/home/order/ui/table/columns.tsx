@@ -11,10 +11,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
 import { Order } from "@/generated/prisma";
+import { StatusButton } from "./status-button";
+import { ORDER_STATUS } from "@/constant";
 
 type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
     createdAt: string;
@@ -28,26 +29,6 @@ type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
 };
 
 export const columns: ColumnDef<OrderOmit>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-    },
     {
         accessorKey: "shop",
         header: "Shop",
@@ -63,14 +44,38 @@ export const columns: ColumnDef<OrderOmit>[] = [
         )
     },
     {
+        accessorKey: "t. quantity",
+        header: "T. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
         accessorKey: "total",
         header: "Total",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali">৳{row.original.totalAmount || "0"}</p>
+        )
+    },
+    {
+        accessorKey: "paid",
+        header: "Paid",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali">৳{row.original.paidAmount || "0"}</p>
+        )
     },
     {
         accessorKey: "due",
         header: "Due",
         cell: ({ row }) => (
-            <p className="truncate">{row.original.due || "0"}</p>
+            <p className="truncate font-bengali">৳{row.original.totalAmount - row.original.paidAmount}</p>
+        )
+    },
+    {
+        accessorKey: "payment status",
+        header: "P. Status",
+        cell: ({ row }) => (
+            <Badge variant="gray" className="rounded-full">{row.original.paymentStatus}</Badge>
         )
     },
     {
@@ -115,6 +120,7 @@ export const columns: ColumnDef<OrderOmit>[] = [
                                 <p>Edit</p>
                             </Link>
                         </DropdownMenuItem>
+                        <StatusButton id={row.original.id} status={row.original.status as ORDER_STATUS} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

@@ -3,37 +3,40 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/loading-button";
+import { Input } from "@/components/ui/input";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 
-import { useUserRole } from "@/hooks/use-user";
-import { ROLE } from "@/constant";
+import { ORDER_STATUS } from "@/constant";
 import { useTRPC } from "@/trpc/client";
-import { useUserFilter } from "../../filter/use-user-filter";
+import { useOrderFilter } from "../../filter/use-order-filter";
+import { useOrderStatus } from "@/hooks/use-order";
 
 const formSchema = z.object({
-    role: z
-        .enum(ROLE)
-        .refine((val) => Object.values(ROLE).includes(val), {
+    status: z
+        .enum(ORDER_STATUS)
+        .refine((val) => Object.values(ORDER_STATUS).includes(val), {
             message: "required",
         }),
+    dueAmount: z.string().optional(),
 });
 
-export const UserRoleModal = () => {
-    const { isOpen, onClose, role, userId } = useUserRole()
+export const OrderStatusModal = () => {
+    const { isOpen, onClose, status, orderId } = useOrderStatus()
 
-    const [filter] = useUserFilter()
+    const [filter] = useOrderFilter()
 
     const trpc = useTRPC()
     const queryClient = useQueryClient()
 
-    const { mutate: updateRole, isPending } = useMutation(trpc.user.updateRole.mutationOptions({
+    const { mutate: updateStatus, isPending } = useMutation(trpc.order.statusBySr.mutationOptions({
         onError: (error) => {
             toast.error(error.message);
         },
@@ -44,7 +47,7 @@ export const UserRoleModal = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.user.getMany.queryOptions({
+                trpc.order.getManyBySr.queryOptions({
                     ...filter,
                 })
             );
@@ -55,20 +58,27 @@ export const UserRoleModal = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            role,
+            status: undefined,
+            dueAmount: "",
         },
     });
 
     useEffect(() => {
-        if (role) {
-            form.setValue("role", role)
+        if (status === ORDER_STATUS.Due || status === ORDER_STATUS.Received) {
+            form.setValue("status", status)
         }
-    }, [])
+    }, [status, form])
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        updateRole({
-            id: userId,
-            role: values.role
+        if (values.status === ORDER_STATUS.Due && !values.dueAmount) {
+            toast.error("Due amount is required")
+            return
+        }
+
+        updateStatus({
+            id: orderId,
+            status: values.status,
+            dueAmount: values.dueAmount
         })
     }
 
@@ -77,25 +87,26 @@ export const UserRoleModal = () => {
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Role</DialogTitle>
+                    <DialogTitle>Status</DialogTitle>
                 </DialogHeader>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <FormField
                             control={form.control}
-                            name="role"
+                            name="status"
                             render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
+                                        <FormLabel className="text-white">Status</FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select role" />
+                                                <SelectValue placeholder="Select status" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {
-                                                Object.values(ROLE).map((role) => (
+                                                Object.values(ORDER_STATUS).slice(4, 6).map((role) => (
                                                     <SelectItem key={role} value={role}>{role}</SelectItem>
                                                 ))
                                             }
@@ -105,6 +116,25 @@ export const UserRoleModal = () => {
                                 </FormItem>
                             )}
                         />
+
+                        <Collapsible open={form.watch("status") === ORDER_STATUS.Due}>
+                            <CollapsibleContent>
+                                <FormField
+                                    control={form.control}
+                                    name="dueAmount"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-white">Due amount</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Due amount" {...field} disabled={isPending} type="number" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                            </CollapsibleContent>
+                        </Collapsible>
 
                         <LoadingButton
                             type="submit"

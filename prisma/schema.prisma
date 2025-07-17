@@ -153,9 +153,12 @@ model Shop {
 
 model Order {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
-  total  Int
-  due    Int?
+  totalQuantity Int
+  totalAmount Float
+  paidAmount  Float  @default(0)
+  dueAmount   Float  @default(0)
   status String @default("Pending")
+  paymentStatus String  @default("Unpaid")
 
   shopId String @db.ObjectId
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: NoAction)
@@ -172,14 +175,15 @@ model Order {
   @@index([employeeId])
   @@index([status])
   @@index([createdAt])
-  @@index([total])
-  @@index([due])
+  @@index([totalAmount])
+  @@index([dueAmount])
+  @@index([paidAmount])
   @@index([shopId, status])
   @@index([employeeId, status])
   @@index([shopId, createdAt])
   @@index([status, createdAt])
   @@index([employeeId, createdAt])
-  @@index([status, total])
+  @@index([status, totalAmount])
   @@index([shopId, status, createdAt])
   @@index([employeeId, status, createdAt])
 }
@@ -228,6 +232,7 @@ model Sale {
 
 model Outgoing {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
+  totalQuantity Int
   total Int
 
   employeeId String   @db.ObjectId
@@ -256,6 +261,7 @@ model OutgoingItem {
 
 model Incoming {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
+  totalQuantity Int
   total Int
 
   employeeId String   @db.ObjectId

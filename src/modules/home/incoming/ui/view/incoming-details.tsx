@@ -15,35 +15,35 @@ interface Props {
     id: string
 }
 
-export function OutgoingDetails({ id }: Props) {
+export function IncomingDetails({ id }: Props) {
     const trpc = useTRPC();
 
-    const { data: outgoing } = useSuspenseQuery(trpc.outgoing.getOneBySr.queryOptions({ id }));
+    const { data: incoming } = useSuspenseQuery(trpc.incoming.getOneBySr.queryOptions({ id }));
 
-    const totalItems = outgoing?.items?.length || 0;
-    const totalQuantity = outgoing?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    const totalItems = incoming?.items?.length || 0;
+    const totalQuantity = incoming?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
     const averageQuantityPerItem = totalItems > 0 ? Math.round(totalQuantity / totalItems) : 0;
 
     return (
-        <div className="min-h-screen bg-gray-900 p-6">
+        <div className="min-h-screen bg-gray-900">
             <div className="mx-auto space-y-6">
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold text-white">Outgoing Details</h1>
-                        <p className="text-gray-400 mt-1">Outgoing #{outgoing?.id.slice(0, 6)}</p>
+                        <h1 className="text-xl font-bold text-white">Incoming Details</h1>
+                        <p className="text-gray-400 mt-1">Incoming #{incoming?.id.slice(0, 6)}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Outgoing Summary */}
+                    {/* Incoming Summary */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Outgoing Items */}
+                        {/* Incoming Items */}
                         <Card className="bg-gray-800 border-gray-700">
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     <Package className="w-5 h-5" />
-                                    Outgoing Items
+                                    Incoming Items
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -58,7 +58,7 @@ export function OutgoingDetails({ id }: Props) {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {outgoing?.items?.map((item) => {
+                                        {incoming?.items?.map((item) => {
                                             const itemTotal = item.product.price * item.quantity;
                                             return (
                                                 <TableRow key={item.id} className="border-gray-600 hover:bg-gray-750">
@@ -105,12 +105,12 @@ export function OutgoingDetails({ id }: Props) {
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Total Value</span>
-                                    <span className="text-white font-medium font-bengali">৳{outgoing?.total?.toLocaleString() || '0'}</span>
+                                    <span className="text-white font-medium font-bengali">৳{incoming?.total?.toLocaleString() || '0'}</span>
                                 </div>
                                 <Separator className="bg-gray-600" />
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Grand Total</span>
-                                    <span className="text-white font-semibold text-lg font-bengali">৳{outgoing?.total?.toLocaleString() || '0'}</span>
+                                    <span className="text-white font-semibold text-lg font-bengali">৳{incoming?.total?.toLocaleString() || '0'}</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -127,12 +127,12 @@ export function OutgoingDetails({ id }: Props) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-gray-400 text-sm">Employee Name</p>
-                                        <p className="text-white font-medium">{outgoing?.employee?.name || 'N/A'}</p>
+                                        <p className="text-white font-medium">{incoming?.employee?.name || 'N/A'}</p>
                                     </div>
-                                    {outgoing?.employee?.phone && (
+                                    {incoming?.employee?.phone && (
                                         <div>
                                             <p className="text-gray-400 text-sm">Phone</p>
-                                            <p className="text-white font-medium">{outgoing.employee.phone}</p>
+                                            <p className="text-white font-medium">{incoming.employee.phone}</p>
                                         </div>
                                     )}
                                 </div>
@@ -155,29 +155,29 @@ export function OutgoingDetails({ id }: Props) {
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                         <div>
-                                            <p className="text-white font-medium">Outgoing Created</p>
+                                            <p className="text-white font-medium">Incoming Created</p>
                                             <p className="text-gray-400 text-sm flex items-center gap-1">
                                                 <CalendarDays className="w-4 h-4" />
-                                                {format(outgoing?.createdAt || new Date(), 'PPP')}
+                                                {format(incoming?.createdAt || new Date(), 'PPP')}
                                             </p>
                                             <p className="text-gray-400 text-sm flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
-                                                {format(outgoing?.createdAt || new Date(), 'p')}
+                                                {format(incoming?.createdAt || new Date(), 'p')}
                                             </p>
                                         </div>
                                     </div>
-                                    {outgoing?.updatedAt && outgoing.updatedAt !== outgoing.createdAt && (
+                                    {incoming?.updatedAt && incoming.updatedAt !== incoming.createdAt && (
                                         <div className="flex items-center gap-3">
                                             <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                                             <div>
                                                 <p className="text-white font-medium">Last Updated</p>
                                                 <p className="text-gray-400 text-sm flex items-center gap-1">
                                                     <CalendarDays className="w-4 h-4" />
-                                                    {format(outgoing.updatedAt, 'PPP')}
+                                                    {format(incoming.updatedAt, 'PPP')}
                                                 </p>
                                                 <p className="text-gray-400 text-sm flex items-center gap-1">
                                                     <Clock className="w-4 h-4" />
-                                                    {format(outgoing.updatedAt, 'p')}
+                                                    {format(incoming.updatedAt, 'p')}
                                                 </p>
                                             </div>
                                         </div>
@@ -218,7 +218,7 @@ export function OutgoingDetails({ id }: Props) {
                                 <CardTitle className="text-white">Product Categories</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {outgoing?.items?.reduce((acc, item) => {
+                                {incoming?.items?.reduce((acc, item) => {
                                     const categoryName = item.product.category?.name || 'Uncategorized';
                                     const existing = acc.find(cat => cat.name === categoryName);
                                     if (existing) {

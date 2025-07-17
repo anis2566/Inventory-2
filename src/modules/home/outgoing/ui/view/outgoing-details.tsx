@@ -25,7 +25,7 @@ export function OutgoingDetails({ id }: Props) {
     const averageQuantityPerItem = totalItems > 0 ? Math.round(totalQuantity / totalItems) : 0;
 
     return (
-        <div className="min-h-screen bg-gray-900 p-6">
+        <div className="min-h-screen bg-gray-900">
             <div className="mx-auto space-y-6">
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
