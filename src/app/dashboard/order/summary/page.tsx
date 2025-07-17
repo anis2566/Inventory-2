@@ -16,9 +16,9 @@ import { ErrorBoundryUI } from "@/components/error-boundary";
 import Loader from "@/components/loader";
 
 import { getQueryClient, trpc } from "@/trpc/server";
-import { SummaryView } from "@/modules/home/order/ui/view/summary-view";
-import { summarySearchParams } from "@/modules/home/order/filter/params";
 import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
+import { summarySearchParams } from "@/modules/dashboard/order/filter/params";
+import { SummaryView } from "@/modules/dashboard/order/ui/view/summary-view";
 
 export const metadata: Metadata = {
     title: "Summary",

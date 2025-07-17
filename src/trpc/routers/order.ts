@@ -275,7 +275,17 @@ export const orderRouter = createTRPCRouter({
                         select: {
                             name: true,
                             id: true,
-                            price: true
+                            price: true,
+                            outgoingItems: {
+                                select: {
+                                    quantity: true
+                                }
+                            },
+                            incomingItems: {
+                                select: {
+                                    quantity: true
+                                }
+                            }
                         },
                     },
                     quantity: true,
@@ -296,55 +306,109 @@ export const orderRouter = createTRPCRouter({
             return Array.from(productMap.values());
         }),
     summary: adminProcedure
-        .input(
-            z.object({
-                date: z.string().optional().nullable(),
-            })
-        )
-        .query(async ({ input }) => {
-            const targetDate = input.date ? new Date(input.date) : new Date()
+.input(
+  z.object({
+    date: z.string().optional().nullable(),
+  })
+)
+.query(async ({ input }) => {
+  const targetDate = input.date ? new Date(input.date) : new Date();
 
-            const dayStart = new Date(Date.UTC(
-                targetDate.getUTCFullYear(),
-                targetDate.getUTCMonth(),
-                targetDate.getUTCDate(),
-                0, 0, 0
-            ))
+  const dayStart = new Date(Date.UTC(
+    targetDate.getUTCFullYear(),
+    targetDate.getUTCMonth(),
+    targetDate.getUTCDate(),
+    0, 0, 0
+  ));
 
-            const dayEnd = new Date(Date.UTC(
-                targetDate.getUTCFullYear(),
-                targetDate.getUTCMonth(),
-                targetDate.getUTCDate(),
-                23, 59, 59, 999
-            ))
+  const dayEnd = new Date(Date.UTC(
+    targetDate.getUTCFullYear(),
+    targetDate.getUTCMonth(),
+    targetDate.getUTCDate(),
+    23, 59, 59, 999
+  ));
 
-            const orderItems = await db.orderItem.findMany({
-                where: {
-                    createdAt: {
-                        gte: dayStart,
-                        lte: dayEnd,
-                    },
-                },
-                select: {
-                    product: {
-                        select: {
-                            name: true,
-                        },
-                    },
-                    quantity: true,
-                },
-            })
+  // Fetch all items in parallel
+  const [orderItems, incomingItems, outgoingItems] = await Promise.all([
+    db.orderItem.findMany({
+      where: {
+        createdAt: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+      select: {
+        product: { select: { name: true } },
+        quantity: true,
+      },
+    }),
+    db.ingoingItem.findMany({
+      where: {
+        createdAt: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+      select: {
+        product: { select: { name: true } },
+        quantity: true,
+      },
+    }),
+    db.outgoingItem.findMany({
+      where: {
+        createdAt: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+      select: {
+        product: { select: { name: true } },
+        quantity: true,
+      },
+    }),
+  ]);
 
-            const productMap = new Map<string, number>()
+  // Initialize map
+  const productMap = new Map<
+    string,
+    { quantity: number; incoming: number; outgoing: number }
+  >();
 
-            for (const item of orderItems) {
-                const name = item.product.name
-                const prev = productMap.get(name) ?? 0
-                productMap.set(name, prev + item.quantity)
-            }
+  // Add orderItems
+  for (const item of orderItems) {
+    const name = item.product.name;
+    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+    entry.quantity += item.quantity;
+    productMap.set(name, entry);
+  }
 
-            return Array.from(productMap, ([name, quantity]) => ({ name, quantity }))
-        }),
+  // Add incomingItems
+  for (const item of incomingItems) {
+    const name = item.product.name;
+    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+    entry.incoming += item.quantity;
+    entry.quantity += item.quantity;
+    productMap.set(name, entry);
+  }
+
+  // Add outgoingItems
+  for (const item of outgoingItems) {
+    const name = item.product.name;
+    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+    entry.outgoing += item.quantity;
+    entry.quantity += item.quantity;
+    productMap.set(name, entry);
+  }
+
+  // Return array of aggregated data
+  return Array.from(productMap, ([name, data]) => ({
+    name,
+    quantity: data.quantity,
+    incoming: data.incoming,
+    outgoing: data.outgoing,
+  }));
+}),
+
     getOne: protectedProcedure
         .input(
             z.object({

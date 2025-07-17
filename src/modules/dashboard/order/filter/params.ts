@@ -15,3 +15,9 @@ const filterParmas = {
 };
 
 export const orderSearchParams = createLoader(filterParmas);
+
+const summaryfilterParmas = {
+    date: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+};
+
+export const summarySearchParams = createLoader(summaryfilterParmas);

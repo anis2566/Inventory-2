@@ -266,7 +266,7 @@ export function getUserMenuList(pathname: string): Group[] {
             menus: [
                 {
                     href: "",
-                    label: "Outgoing",
+                    label: "Stock Out",
                     active: pathname.includes("/outgoing"),
                     icon: LogOut,
                     submenus: [
@@ -286,7 +286,7 @@ export function getUserMenuList(pathname: string): Group[] {
                 },
                 {
                     href: "",
-                    label: "Incoming",
+                    label: "Stock In",
                     active: pathname.includes("/incoming"),
                     icon: LogIn,
                     submenus: [
