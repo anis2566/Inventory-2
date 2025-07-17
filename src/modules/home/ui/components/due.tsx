@@ -30,8 +30,8 @@ export const DueCard = ({ dueAmount, dueShops }: DueCardProps) => {
             <CardContent className="space-y-3">
                 {/* Main amount display */}
                 <div className="flex items-baseline gap-1">
-                    <div className="text-3xl font-bold text-white tracking-tight">
-                        {formatCurrency(dueAmount)}
+                    <div className="text-3xl font-bold text-white font-bengali tracking-wider">
+                        ৳{formatCurrency(dueAmount)}
                     </div>
                     {dueAmount > 0 && (
                         <div className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full">
