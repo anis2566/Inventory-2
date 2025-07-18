@@ -206,9 +206,49 @@ export function getAdminMenuList(pathname: string): Group[] {
             menus: [
                 {
                     href: "/dashboard/outgoing",
-                    label: "Outgoing",
+                    label: "Stock Out",
                     active: pathname === "/dashboard/outgoing",
                     icon: LogOut,
+                    submenus: [],
+                },
+                {
+                    href: "/dashboard/incoming",
+                    label: "Stock In",
+                    active: pathname === "/dashboard/incoming",
+                    icon: LogIn,
+                    submenus: [
+                        {
+                            href: "/dashboard/incoming/new",
+                            label: "New",
+                            active: pathname === "/dashboard/incoming/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/incoming",
+                            label: "List",
+                            active: pathname === "/dashboard/incoming",
+                            icon: List,
+                        },
+
+                    ],
+                },
+            ],
+        },
+        {
+            groupLabel: "Report",
+            menus: [
+                {
+                    href: "/dashboard/report/product",
+                    label: "Product",
+                    active: pathname.includes("/dashboard/report/product"),
+                    icon: Package,
+                    submenus: [],
+                },
+                {
+                    href: "/dashboard/report/sale",
+                    label: "Sales",
+                    active: pathname.includes("/dashboard/report/sale"),
+                    icon: ShoppingBag,
                     submenus: [],
                 },
             ],
@@ -280,26 +320,6 @@ export function getUserMenuList(pathname: string): Group[] {
                             href: "/outgoing",
                             label: "List",
                             active: pathname === "/outgoing",
-                            icon: List,
-                        },
-                    ],
-                },
-                {
-                    href: "",
-                    label: "Stock In",
-                    active: pathname.includes("/incoming"),
-                    icon: LogIn,
-                    submenus: [
-                        {
-                            href: "/incoming/new",
-                            label: "New",
-                            active: pathname === "/incoming/new",
-                            icon: PlusCircle,
-                        },
-                        {
-                            href: "/incoming",
-                            label: "List",
-                            active: pathname === "/incoming",
                             icon: List,
                         },
                     ],

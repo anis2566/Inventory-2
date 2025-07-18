@@ -40,14 +40,14 @@ export const columns: ColumnDef<IncomingOmit>[] = [
         accessorKey: "quantity",
         header: "T. Quantity",
         cell: ({ row }) => (
-            <p className="truncate font-bengali">৳{row.original.totalQuantity}</p>
+            <p className="truncate">{row.original.totalQuantity}</p>
         )
     },
     {
         accessorKey: "t. amount",
         header: "T. Amount",
         cell: ({ row }) => (
-            <p className="truncate">{row.original.total}</p>
+            <p className="truncate font-bengali">৳{row.original.total}</p>
         )
     },
     {

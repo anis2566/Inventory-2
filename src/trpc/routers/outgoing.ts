@@ -46,6 +46,8 @@ export const outgoingRouter = createTRPCRouter({
                     }
                 }
 
+                console.log(items)
+
                 const total = items.reduce((acc, item) => acc + Number(item.quantity) * Number(item.price), 0);
 
                 const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
@@ -423,10 +425,12 @@ export const outgoingRouter = createTRPCRouter({
             const [outgoings, totalCount] = await Promise.all([
                 db.outgoing.findMany({
                     where: {
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        },
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        }),
                         ...(employee && {
                             employee: {
                                 name: {
@@ -457,10 +461,12 @@ export const outgoingRouter = createTRPCRouter({
                 }),
                 db.outgoing.count({
                     where: {
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        },
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        }),
                         ...(employee && {
                             employee: {
                                 name: {

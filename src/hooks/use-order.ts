@@ -1,4 +1,4 @@
-import { ORDER_STATUS, ROLE } from "@/constant";
+import { ORDER_STATUS, PAYMENT_STATUS, ROLE } from "@/constant";
 import { create } from "zustand";
 
 interface DeleteOrderState {
@@ -44,4 +44,36 @@ export const useOrderStatus = create<OrderStatusState>((set) => ({
     status: ORDER_STATUS.Pending,
     onOpen: (id: string, status: ORDER_STATUS) => set({ isOpen: true, orderId: id, status }),
     onClose: () => set({ isOpen: false, orderId: "", status: ORDER_STATUS.Pending }),
+}));
+
+interface PyamentStatusState {
+    isOpen: boolean;
+    orderId: string;
+    status: PAYMENT_STATUS;
+    onOpen: (id: string, status: PAYMENT_STATUS) => void;
+    onClose: () => void;
+}
+
+export const usePaymentStatus = create<PyamentStatusState>((set) => ({
+    isOpen: false,
+    orderId: "",
+    status: PAYMENT_STATUS.Unpaid,
+    onOpen: (id: string, status: PAYMENT_STATUS) => set({ isOpen: true, orderId: id, status }),
+    onClose: () => set({ isOpen: false, orderId: "", status: PAYMENT_STATUS.Unpaid }),
+}));
+
+interface PyamentStatusAdminState {
+    isOpen: boolean;
+    orderId: string;
+    status: PAYMENT_STATUS;
+    onOpen: (id: string, status: PAYMENT_STATUS) => void;
+    onClose: () => void;
+}
+
+export const usePaymentStatusAdmin = create<PyamentStatusAdminState>((set) => ({
+    isOpen: false,
+    orderId: "",
+    status: PAYMENT_STATUS.Unpaid,
+    onOpen: (id: string, status: PAYMENT_STATUS) => set({ isOpen: true, orderId: id, status }),
+    onClose: () => set({ isOpen: false, orderId: "", status: PAYMENT_STATUS.Unpaid }),
 }));

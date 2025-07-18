@@ -25,14 +25,15 @@ export function Sidebar() {
                 <div className="flex items-center justify-between bg-gray-800 h-16 border-b border-r border-gray-700 px-4">
                     <Link href="/user" className="flex items-center gap-2">
                         <Image
-                            src="/logo.svg"
+                            src="/logo.png"
                             alt="Logo"
-                            width={24}
-                            height={24}
+                            width={35}
+                            height={35}
+                            className="bg-white rounded-full p-1"
                         />
                         <div className={cn("", !sidebar.isOpen && "hidden")}>
-                            <h1 className="text-white font-semibold">POS</h1>
-                            <p className="text-gray-400 text-sm">Armanitola Library</p>
+                            <h1 className="text-white font-semibold">Hayat Haven</h1>
+                            <p className="text-gray-400 text-sm">Inventory</p>
                         </div>
                     </Link>
                     <SidebarToggle isOpen={sidebar?.isOpen} setIsOpen={sidebar?.setIsOpen} />

@@ -14,8 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 import { Order } from "@/generated/prisma";
-import { StatusButton } from "./status-button";
-import { ORDER_STATUS } from "@/constant";
+import { PaymentStatusButton } from "./payment-status-button";
+import {  PAYMENT_STATUS } from "@/constant";
 
 type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
     createdAt: string;
@@ -48,6 +48,20 @@ export const columns: ColumnDef<OrderOmit>[] = [
         header: "T. Quantity",
         cell: ({ row }) => (
             <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "r. quantity",
+        header: "R. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.returnedQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "d. quantity",
+        header: "D. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.damageQuantity}</p>
         )
     },
     {
@@ -120,7 +134,7 @@ export const columns: ColumnDef<OrderOmit>[] = [
                                 <p>Edit</p>
                             </Link>
                         </DropdownMenuItem>
-                        <StatusButton id={row.original.id} status={row.original.status as ORDER_STATUS} />
+                        <PaymentStatusButton id={row.original.id} status={row.original.paymentStatus as PAYMENT_STATUS} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

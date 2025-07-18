@@ -6,6 +6,7 @@ import { incominggRouter } from './incoming';
 import { orderRouter } from './order';
 import { outgoingRouter } from './outgoing';
 import { productRouter } from './product';
+import { reportRouter } from './report';
 import { sellReportRouter } from './sale-report';
 import { shopRouter } from './shop';
 import { userRouter } from './user';
@@ -22,7 +23,8 @@ export const appRouter = createTRPCRouter({
     outgoing: outgoingRouter,
     incoming: incominggRouter,
     sellReport: sellReportRouter,
-    userDashboard: userDashboardRouter
+    userDashboard: userDashboardRouter,
+    report: reportRouter,
 });
 
 export type AppRouter = typeof appRouter;

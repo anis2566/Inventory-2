@@ -137,7 +137,7 @@ export const employeeRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const { search } = input;
-            const employees = await db.brand.findMany({
+            const employees = await db.employee.findMany({
                 where: {
                     ...(search && {
                         name: {

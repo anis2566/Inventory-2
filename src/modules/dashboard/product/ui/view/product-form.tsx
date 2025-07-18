@@ -90,6 +90,7 @@ export const ProductForm = () => {
             productCode: "",
             description: "",
             price: "",
+            damageStock: "0",
             discountPrice: "",
             brandId: "",
             stock: "",

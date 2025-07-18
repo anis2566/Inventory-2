@@ -136,8 +136,8 @@ export const OutgoingForm = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Add Outgoing</CardTitle>
-                <CardDescription>Add your outgoing details below</CardDescription>
+                <CardTitle>Add Stock Out</CardTitle>
+                <CardDescription>Add your stock out details below</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>

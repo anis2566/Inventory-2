@@ -1,7 +1,7 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarIcon, CircleX, Trash2 } from "lucide-react";
 
 import {
@@ -18,6 +18,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { DataTableViewOptions } from "@/components/data-table-view-option";
 import {
@@ -28,6 +29,7 @@ import {
 import { useOutgoingFilter } from "../../filter/use-outgoing-filter";
 import { format } from "date-fns";
 import { useDeleteManyOutgoing } from "@/hooks/use-outgoing";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface HasId {
     id: string;
@@ -39,20 +41,28 @@ interface FilterProps<TData extends HasId> {
 
 export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
     const [date, setDate] = useState<Date>()
+    const [search, setSearch] = useState<string>("");
 
     const { onOpen } = useDeleteManyOutgoing();
     const [filter, setFilter] = useOutgoingFilter();
+    const debouceValue = useDebounce(search, 500);
+
+    useEffect(() => {
+        setFilter({ employee: debouceValue });
+    }, [debouceValue]);
 
     const handleSortChange = (value: string) => {
         setFilter({ sort: value });
     };
 
     const handleClear = () => {
+        setSearch("");
         setFilter({
             limit: DEFAULT_PAGE_SIZE,
             page: DEFAULT_PAGE,
             sort: "",
             date: "",
+            employee: "",
         });
     };
 
@@ -60,7 +70,8 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
         filter.limit !== 5 ||
         filter.page !== 1 ||
         filter.sort !== "" ||
-        filter.date !== "";
+        filter.date !== "" ||
+        filter.employee !== "";
 
     const isMultipleSelected =
         table.getIsSomeRowsSelected() || table.getIsAllRowsSelected();
@@ -76,12 +87,18 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
     return (
         <div className="w-full flex items-center justify-between">
             <div className="hidden md:flex items-center gap-4">
+                <Input 
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search employee..."
+                />
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button
                             variant="gray"
                             data-empty={!date}
-                            className="text-gray-400 w-[200px] justify-start text-left font-normal"
+                            className="text-gray-400 w-[150px] justify-start text-left font-normal"
                         >
                             <CalendarIcon />
                             {date ? format(date, "PPP") : <span>Pick a date</span>}

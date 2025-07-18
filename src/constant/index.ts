@@ -30,9 +30,14 @@ export enum ORDER_STATUS {
     Placed = 'Placed',
     Shipped = 'Shipped',
     Delivered = 'Delivered',
+    Cancelled = 'Cancelled'
+}
+
+export enum PAYMENT_STATUS {
+    Unpaid = 'Unpaid',
     Due = 'Due',
     Received = 'Received',
-    Cancelled = 'Cancelled'
+    Paid = 'Paid'
 }
 
 export enum PRODUCT_CONDITION {

@@ -1,16 +1,15 @@
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, srProcedure } from "../init";
+import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { IncomingSchema } from "@/schema/incoming";
 import { PRODUCT_CONDITION } from "@/constant";
 
 export const incominggRouter = createTRPCRouter({
-    createOne: srProcedure
+    createOne: adminProcedure
         .input(IncomingSchema)
         .mutation(async ({ input, ctx }) => {
-            const employee = ctx.employee
-            const { items } = input;
+            const { items, employeeId } = input;
 
             try {
                 const total = items.reduce((acc, item) => acc + Number(item.quantity) * Number(item.price), 0);
@@ -26,7 +25,7 @@ export const incominggRouter = createTRPCRouter({
                 await db.$transaction(async (tx) => {
                     await tx.incoming.create({
                         data: {
-                            employeeId: employee.id,
+                            employeeId,
                             total,
                             totalQuantity,
                             items: {
@@ -36,6 +35,7 @@ export const incominggRouter = createTRPCRouter({
                             },
                         },
                     });
+
                     for (const item of items) {
                         if (item.reason === PRODUCT_CONDITION.Damaged) {
                             await tx.product.update({
@@ -200,6 +200,30 @@ export const incominggRouter = createTRPCRouter({
                     message: "Internal Server Error",
                 };
             }
+        }),
+    forSelect: adminProcedure
+        .input(
+            z.object({
+                search: z.string().nullish(),
+            })
+        )
+        .query(async ({ input }) => {
+            const { search } = input;
+            const employees = await db.employee.findMany({
+                where: {
+                    ...(search && {
+                        name: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    }),
+                },
+                select: {
+                    id: true,
+                    name: true,
+                },
+            });
+            return employees;
         }),
     getOneBySr: srProcedure
         .input(
@@ -375,10 +399,12 @@ export const incominggRouter = createTRPCRouter({
             const [incomings, totalCount] = await Promise.all([
                 db.incoming.findMany({
                     where: {
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        },
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        }),
                         ...(employee && {
                             employee: {
                                 name: {
@@ -398,7 +424,7 @@ export const incominggRouter = createTRPCRouter({
                             select: {
                                 items: true
                             }
-                        }
+                        },
                     },
                     orderBy: {
                         createdAt: sort === "asc" ? "asc" : "desc",
@@ -409,10 +435,12 @@ export const incominggRouter = createTRPCRouter({
                 }),
                 db.incoming.count({
                     where: {
-                        createdAt: {
-                            gte: dayStart,
-                            lte: dayEnd
-                        },
+                        ...(date && {
+                            createdAt: {
+                                gte: dayStart,
+                                lte: dayEnd
+                            }
+                        }),
                         ...(employee && {
                             employee: {
                                 name: {

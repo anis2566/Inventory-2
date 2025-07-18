@@ -127,8 +127,8 @@ export const IncomingForm = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Add Incoming</CardTitle>
-                <CardDescription>Add your incoming details below</CardDescription>
+                <CardTitle>Add Stock In</CardTitle>
+                <CardDescription>Add your stock in details below</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>

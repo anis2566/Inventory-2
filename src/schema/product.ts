@@ -9,6 +9,7 @@ export const ProductSchema = z.object({
     price: z.string().min(1, { message: "required" }),
     discountPrice: z.string().optional(),
     stock: z.string().min(1, { message: "required" }),
+    damageStock: z.string().min(1, { message: "required" }),
     categoryId: z.string().min(1, { message: "required" }),
     brandId: z.string().min(1, { message: "required" }),
     status: z

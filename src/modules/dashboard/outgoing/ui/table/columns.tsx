@@ -70,7 +70,14 @@ export const columns: ColumnDef<OutgoingOmit>[] = [
         accessorKey: "quantity",
         header: "T. Quantity",
         cell: ({ row }) => (
-            <p className="truncate">{row.original.total}</p>
+            <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "T. Amount",
+        header: "T. Amount",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali tracking-wider">৳{row.original.total}</p>
         )
     },
     {

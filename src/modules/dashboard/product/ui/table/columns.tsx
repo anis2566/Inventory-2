@@ -86,6 +86,13 @@ export const columns: ColumnDef<ProductOmit>[] = [
         header: "Stock",
     },
     {
+        accessorKey: "d. stock",
+        header: "D. Stock",
+        cell: ({ row }) => (
+            <p>{row.original.damageStock || "0"}</p>
+        )
+    },
+    {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
@@ -111,7 +118,7 @@ export const columns: ColumnDef<ProductOmit>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                             <Link
-                                href={`/product/edit/${row.original.id}`}
+                                href={`/dashboard/product/edit/${row.original.id}`}
                                 className="flex items-center gap-x-3"
                             >
                                 <Edit className="w-5 h-5" />

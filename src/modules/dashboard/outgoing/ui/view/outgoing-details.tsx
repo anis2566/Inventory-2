@@ -30,8 +30,7 @@ export function OutgoingDetails({ id }: Props) {
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold text-white">Outgoing Details</h1>
-                        <p className="text-gray-400 mt-1">Outgoing #{outgoing?.id.slice(0, 6)}</p>
+                        <h1 className="text-xl font-bold text-white">Stock Out Details</h1>
                     </div>
                 </div>
 

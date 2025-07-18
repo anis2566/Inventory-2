@@ -154,9 +154,13 @@ model Shop {
 model Order {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   totalQuantity Int
+  returnedQuantity Int  @default(0)
+  damageQuantity Int  @default(0)
   totalAmount Float
   paidAmount  Float  @default(0)
   dueAmount   Float  @default(0)
+  date DateTime @default(now())
+  deliveryDate DateTime?
   status String @default("Pending")
   paymentStatus String  @default("Unpaid")
 
@@ -169,7 +173,7 @@ model Order {
   orderItems OrderItem[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
 
   @@index([shopId])
   @@index([employeeId])

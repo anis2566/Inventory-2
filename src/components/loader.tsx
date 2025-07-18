@@ -46,7 +46,7 @@ export const Loader = ({ className }: LoaderProps) => {
                 {/* Brand Name - Further reduced text size */}
                 <div className="text-center">
                     <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent mb-1">
-                        POS
+                        H & H
                     </h1>
                 </div>
 

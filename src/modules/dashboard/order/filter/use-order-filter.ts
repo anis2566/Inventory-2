@@ -6,6 +6,7 @@ export const useOrderFilter = () => {
     return useQueryStates({
         search: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
         status: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+        paymentStatus: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
         page: parseAsInteger
             .withDefault(DEFAULT_PAGE)
             .withOptions({ clearOnDefault: true }),
@@ -13,5 +14,6 @@ export const useOrderFilter = () => {
             .withDefault(DEFAULT_PAGE_SIZE)
             .withOptions({ clearOnDefault: true }),
         sort: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
+        date: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
     });
 };

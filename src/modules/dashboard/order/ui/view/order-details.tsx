@@ -43,7 +43,6 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-bold text-white">Order Details</h1>
-                        <p className="text-gray-400 mt-1">Order #{order?.id.slice(0, 6)}</p>
                     </div>
                     <Badge className={`${getStatusColor(order?.status as string)} text-white px-4 py-2 text-sm font-medium`}>
                         {order?.status}
@@ -86,11 +85,11 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                                                 <TableCell className="text-center text-gray-300">
                                                     {item.quantity}
                                                 </TableCell>
-                                                <TableCell className="text-right text-gray-300">
-                                                    {item.price}
+                                                <TableCell className="text-right text-gray-300 font-bengali tracking-wider">
+                                                    ৳{item.price}
                                                 </TableCell>
-                                                <TableCell className="text-right text-white font-medium">
-                                                    {item.total}
+                                                <TableCell className="text-right text-white font-medium font-bengali tracking-wider">
+                                                    ৳{item.total}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -115,7 +114,7 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                                     </div>
                                     <div className="md:col-span-2">
                                         <p className="text-gray-400 text-sm">Address</p>
-                                        <p className="text-white font-medium">{order?.shop.address}</p>
+                                        <p className="text-white font-medium">{order?.shop?.address}</p>
                                     </div>
                                     {order?.shop.phone && (
                                         <div>
@@ -156,26 +155,24 @@ export const OrderDetails = ({ id }: OrderDetailsProps) => {
                                     Payment Summary
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Subtotal</span>
-                                    <span className="text-white font-medium">{order?.total}</span>
+                                    <span className="text-white font-medium font-bengali tracking-wider">৳{order?.totalAmount}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Paid</span>
+                                    <span className="text-white font-medium font-bengali tracking-wider">৳{order?.paidAmount}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Due</span>
+                                    <span className="text-white font-medium font-bengali tracking-wider">৳{order?.dueAmount}</span>
                                 </div>
                                 <Separator className="bg-gray-600" />
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Total</span>
-                                    <span className="text-white font-semibold text-lg">{order?.total}</span>
+                                    <span className="text-white font-semibold text-lg font-bengali tracking-wider">৳{order?.totalAmount}</span>
                                 </div>
-                                {/* <div className="flex justify-between">
-                  <span className="text-gray-400">Paid</span>
-                  <span className="text-green-400 font-medium">{formatCurrency(paidAmount)}</span>
-                </div>
-                {order.due && order.due > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Due</span>
-                    <span className="text-red-400 font-medium">{formatCurrency(order.due)}</span>
-                  </div>
-                )} */}
                             </CardContent>
                         </Card>
 

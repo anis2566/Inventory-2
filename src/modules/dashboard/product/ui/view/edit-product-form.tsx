@@ -121,6 +121,7 @@ export const EditProductForm = ({ id }: Props) => {
             discountPrice: data?.discountPrice ? data.discountPrice.toString() : "",
             brandId: data?.brandId || "",
             stock: data?.stock.toString() || "",
+            damageStock: data?.damageStock.toString() || "",
             categoryId: data?.categoryId || "",
             status: data?.status as CATEGORY_STATUS || CATEGORY_STATUS.INACTIVE,
         },
@@ -221,6 +222,20 @@ export const EditProductForm = ({ id }: Props) => {
                                     <FormLabel>Stock</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Stock" {...field} disabled={isPending} type="number" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        
+                        <FormField
+                            control={form.control}
+                            name="damageStock"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Damage stock</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Damage stock" {...field} disabled={isPending} type="number" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

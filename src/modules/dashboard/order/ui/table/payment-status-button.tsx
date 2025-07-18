@@ -5,16 +5,16 @@ import { RefreshCcw } from "lucide-react"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 import { cn } from "@/lib/utils";
-import { ORDER_STATUS } from "@/constant";
-import { useOrderStatus } from "@/hooks/use-order";
+import { PAYMENT_STATUS } from "@/constant";
+import { usePaymentStatusAdmin } from "@/hooks/use-order";
 
 interface DeleteButtonProps {
     id: string;
-    status: ORDER_STATUS
+    status: PAYMENT_STATUS
 }
 
-export const StatusButton = ({ id, status }: DeleteButtonProps) => {
-    const { onOpen } = useOrderStatus();
+export const PaymentStatusButton = ({ id, status }: DeleteButtonProps) => {
+    const { onOpen } = usePaymentStatusAdmin();
 
     return (
         <DropdownMenuItem
@@ -22,7 +22,7 @@ export const StatusButton = ({ id, status }: DeleteButtonProps) => {
             onClick={() => onOpen(id, status)}
         >
             <RefreshCcw className="w-5 h-5" />
-            <p>Change status</p>
+            <p>Payment status</p>
         </DropdownMenuItem>
     )
 }

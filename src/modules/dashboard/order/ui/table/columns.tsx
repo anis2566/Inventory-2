@@ -16,6 +16,9 @@ import { Badge } from "@/components/ui/badge";
 
 import { Order } from "@/generated/prisma";
 import { DeleteButton } from "./delete-button";
+import { PaymentStatusButton } from "./payment-status-button";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
+import { OrderStatusButton } from "./status-button";
 
 type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
     createdAt: string;
@@ -23,6 +26,9 @@ type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
     shop: {
         name: string;
     };
+    employee: {
+        name: string;
+    }
     _count: {
         orderItems: number;
     };
@@ -57,6 +63,13 @@ export const columns: ColumnDef<OrderOmit>[] = [
         )
     },
     {
+        accessorKey: "SR",
+        header: "SR",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.employee.name || "-"}</p>
+        )
+    },
+    {
         accessorKey: "items",
         header: "Items",
         cell: ({ row }) => (
@@ -64,14 +77,52 @@ export const columns: ColumnDef<OrderOmit>[] = [
         )
     },
     {
+        accessorKey: "t. quantity",
+        header: "T. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "r. quantity",
+        header: "R. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.returnedQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "d. quantity",
+        header: "D. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.damageQuantity}</p>
+        )
+    },
+    {
         accessorKey: "total",
         header: "Total",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali">৳{row.original.totalAmount || "0"}</p>
+        )
+    },
+    {
+        accessorKey: "paid",
+        header: "Paid",
+        cell: ({ row }) => (
+            <p className="truncate font-bengali">৳{row.original.paidAmount || "0"}</p>
+        )
     },
     {
         accessorKey: "due",
         header: "Due",
         cell: ({ row }) => (
-            <p className="truncate">{row.original.due || "0"}</p>
+            <p className="truncate font-bengali">৳{row.original.totalAmount - row.original.paidAmount}</p>
+        )
+    },
+    {
+        accessorKey: "payment status",
+        header: "P. Status",
+        cell: ({ row }) => (
+            <Badge variant="gray" className="rounded-full">{row.original.paymentStatus}</Badge>
         )
     },
     {
@@ -116,6 +167,8 @@ export const columns: ColumnDef<OrderOmit>[] = [
                                 <p>Edit</p>
                             </Link>
                         </DropdownMenuItem>
+                        <PaymentStatusButton id={row.original.id} status={row.original.paymentStatus as PAYMENT_STATUS} />
+                        <OrderStatusButton id={row.original.id} status={row.original.paymentStatus as ORDER_STATUS} />
                         <DeleteButton id={row.original.id} />
                     </DropdownMenuContent>
                 </DropdownMenu>

@@ -9,6 +9,7 @@ export const IncomingItemSchema = z.object({
 })
 
 export const IncomingSchema = z.object({
+    employeeId: z.string().min(1, { message: "required" }),
     items: z.array(IncomingItemSchema).min(1, { message: "required" }),
 })
 

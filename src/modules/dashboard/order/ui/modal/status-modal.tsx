@@ -11,8 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/loading-button";
-import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 
 import { ORDER_STATUS } from "@/constant";
 import { useTRPC } from "@/trpc/client";
@@ -25,10 +23,9 @@ const formSchema = z.object({
         .refine((val) => Object.values(ORDER_STATUS).includes(val), {
             message: "required",
         }),
-    dueAmount: z.string().optional(),
 });
 
-export const OrderStatusModal = () => {
+export const StatusModal = () => {
     const { isOpen, onClose, status, orderId } = useOrderStatus()
 
     const [filter] = useOrderFilter()
@@ -36,7 +33,7 @@ export const OrderStatusModal = () => {
     const trpc = useTRPC()
     const queryClient = useQueryClient()
 
-    const { mutate: updateStatus, isPending } = useMutation(trpc.order.statusBySr.mutationOptions({
+    const { mutate: updateStatus, isPending } = useMutation(trpc.order.status.mutationOptions({
         onError: (error) => {
             toast.error(error.message);
         },
@@ -47,10 +44,11 @@ export const OrderStatusModal = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.order.getManyBySr.queryOptions({
+                trpc.order.getMany.queryOptions({
                     ...filter,
                 })
             );
+            form.reset();
             onClose();
         },
     }))
@@ -59,26 +57,19 @@ export const OrderStatusModal = () => {
         resolver: zodResolver(formSchema),
         defaultValues: {
             status: undefined,
-            dueAmount: "",
         },
     });
 
     useEffect(() => {
-        if (status === ORDER_STATUS.Due || status === ORDER_STATUS.Received) {
+        if (status) {
             form.setValue("status", status)
         }
     }, [status, form])
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        if (values.status === ORDER_STATUS.Due && !values.dueAmount) {
-            toast.error("Due amount is required")
-            return
-        }
-
         updateStatus({
             id: orderId,
             status: values.status,
-            dueAmount: values.dueAmount
         })
     }
 
@@ -106,8 +97,8 @@ export const OrderStatusModal = () => {
                                         </FormControl>
                                         <SelectContent>
                                             {
-                                                Object.values(ORDER_STATUS).slice(4, 6).map((role) => (
-                                                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                                                Object.values(ORDER_STATUS).map((status) => (
+                                                    <SelectItem key={status} value={status}>{status}</SelectItem>
                                                 ))
                                             }
                                         </SelectContent>
@@ -116,25 +107,6 @@ export const OrderStatusModal = () => {
                                 </FormItem>
                             )}
                         />
-
-                        <Collapsible open={form.watch("status") === ORDER_STATUS.Due}>
-                            <CollapsibleContent>
-                                <FormField
-                                    control={form.control}
-                                    name="dueAmount"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-white">Due amount</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Due amount" {...field} disabled={isPending} type="number" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                            </CollapsibleContent>
-                        </Collapsible>
 
                         <LoadingButton
                             type="submit"

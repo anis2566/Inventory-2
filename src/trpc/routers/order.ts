@@ -3,7 +3,7 @@ import { z } from "zod";
 import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { OrderSchema } from "@/schema/order";
-import { ORDER_STATUS } from "@/constant";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
 
 export const orderRouter = createTRPCRouter({
     createOne: srProcedure
@@ -16,7 +16,7 @@ export const orderRouter = createTRPCRouter({
                 const hasDueOrder = await db.order.findFirst({
                     where: {
                         shopId,
-                        status: ORDER_STATUS.Due
+                        paymentStatus: PAYMENT_STATUS.Due
                     }
                 })
 
@@ -130,11 +130,11 @@ export const orderRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    statusBySr: srProcedure
+    paymentStatusBySr: srProcedure
         .input(
             z.object({
                 id: z.string(),
-                status: z.enum(ORDER_STATUS),
+                status: z.enum(PAYMENT_STATUS),
                 dueAmount: z.string().nullish()
             })
         )
@@ -150,17 +150,17 @@ export const orderRouter = createTRPCRouter({
                     return { success: false, message: "Order not found" }
                 }
 
-                if (existingOrder.status === ORDER_STATUS.Received && status === ORDER_STATUS.Due) {
+                if (existingOrder.paymentStatus === PAYMENT_STATUS.Received && status === PAYMENT_STATUS.Due) {
                     return { success: false, message: "Order already received" }
                 }
 
-                if (status === ORDER_STATUS.Due && dueAmount) {
+                if (status === PAYMENT_STATUS.Due && dueAmount) {
                     await db.order.update({
                         where: { id },
                         data: {
-                            status,
-                            paidAmount: existingOrder.totalAmount - Number(dueAmount),
-                            dueAmount: Number(dueAmount),
+                            paymentStatus: status,
+                            paidAmount: Number(dueAmount),
+                            dueAmount: existingOrder.totalAmount - Number(dueAmount),
                         }
                     })
                 } else {
@@ -170,6 +170,124 @@ export const orderRouter = createTRPCRouter({
                             status,
                             paidAmount: existingOrder.totalAmount,
                             dueAmount: 0
+                        }
+                    })
+                }
+
+                return { success: true, message: "Order updated" }
+            } catch (error) {
+                console.error("Error updating order", error);
+                return { success: false, message: "Internal Server Error" }
+            }
+
+        }),
+    paymentStatus: adminProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                status: z.enum(PAYMENT_STATUS),
+                dueAmount: z.string().nullish()
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, status, dueAmount } = input;
+
+            try {
+                const existingOrder = await db.order.findUnique({
+                    where: { id },
+                })
+
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
+                }
+
+                if (existingOrder.paymentStatus === PAYMENT_STATUS.Received && status === PAYMENT_STATUS.Due) {
+                    return { success: false, message: "Order already received" }
+                }
+
+                if (status === PAYMENT_STATUS.Due && dueAmount) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            paymentStatus: status,
+                            paidAmount: Number(dueAmount),
+                            dueAmount: existingOrder.totalAmount - Number(dueAmount),
+                        }
+                    })
+                }
+
+                if (status === PAYMENT_STATUS.Paid) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            paymentStatus: status,
+                            paidAmount: existingOrder.totalAmount,
+                            dueAmount: 0
+                        }
+                    })
+                }
+
+                if (status === PAYMENT_STATUS.Unpaid) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            paymentStatus: status,
+                            paidAmount: 0,
+                            dueAmount: existingOrder.totalAmount
+                        }
+                    })
+                }
+
+                return { success: true, message: "Order updated" }
+            } catch (error) {
+                console.error("Error updating order", error);
+                return { success: false, message: "Internal Server Error" }
+            }
+
+        }),
+    status: srProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                status: z.enum(ORDER_STATUS),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, status } = input;
+
+            try {
+                const existingOrder = await db.order.findUnique({
+                    where: { id },
+                })
+
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
+                }
+
+                if (status === ORDER_STATUS.Delivered) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            status,
+                            paidAmount: existingOrder.totalAmount,
+                            dueAmount: 0
+                        }
+                    })
+                } else if (status === ORDER_STATUS.Cancelled) {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            status,
+                            totalAmount: 0,
+                            paidAmount: 0,
+                            dueAmount: 0
+                        }
+                    })
+                } else {
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            status
                         }
                     })
                 }
@@ -306,108 +424,108 @@ export const orderRouter = createTRPCRouter({
             return Array.from(productMap.values());
         }),
     summary: adminProcedure
-.input(
-  z.object({
-    date: z.string().optional().nullable(),
-  })
-)
-.query(async ({ input }) => {
-  const targetDate = input.date ? new Date(input.date) : new Date();
+        .input(
+            z.object({
+                date: z.string().optional().nullable(),
+            })
+        )
+        .query(async ({ input }) => {
+            const targetDate = input.date ? new Date(input.date) : new Date();
 
-  const dayStart = new Date(Date.UTC(
-    targetDate.getUTCFullYear(),
-    targetDate.getUTCMonth(),
-    targetDate.getUTCDate(),
-    0, 0, 0
-  ));
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ));
 
-  const dayEnd = new Date(Date.UTC(
-    targetDate.getUTCFullYear(),
-    targetDate.getUTCMonth(),
-    targetDate.getUTCDate(),
-    23, 59, 59, 999
-  ));
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ));
 
-  // Fetch all items in parallel
-  const [orderItems, incomingItems, outgoingItems] = await Promise.all([
-    db.orderItem.findMany({
-      where: {
-        createdAt: {
-          gte: dayStart,
-          lte: dayEnd,
-        },
-      },
-      select: {
-        product: { select: { name: true } },
-        quantity: true,
-      },
-    }),
-    db.ingoingItem.findMany({
-      where: {
-        createdAt: {
-          gte: dayStart,
-          lte: dayEnd,
-        },
-      },
-      select: {
-        product: { select: { name: true } },
-        quantity: true,
-      },
-    }),
-    db.outgoingItem.findMany({
-      where: {
-        createdAt: {
-          gte: dayStart,
-          lte: dayEnd,
-        },
-      },
-      select: {
-        product: { select: { name: true } },
-        quantity: true,
-      },
-    }),
-  ]);
+            // Fetch all items in parallel
+            const [orderItems, incomingItems, outgoingItems] = await Promise.all([
+                db.orderItem.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                    },
+                    select: {
+                        product: { select: { name: true } },
+                        quantity: true,
+                    },
+                }),
+                db.ingoingItem.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                    },
+                    select: {
+                        product: { select: { name: true } },
+                        quantity: true,
+                    },
+                }),
+                db.outgoingItem.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                    },
+                    select: {
+                        product: { select: { name: true } },
+                        quantity: true,
+                    },
+                }),
+            ]);
 
-  // Initialize map
-  const productMap = new Map<
-    string,
-    { quantity: number; incoming: number; outgoing: number }
-  >();
+            // Initialize map
+            const productMap = new Map<
+                string,
+                { quantity: number; incoming: number; outgoing: number }
+            >();
 
-  // Add orderItems
-  for (const item of orderItems) {
-    const name = item.product.name;
-    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
-    entry.quantity += item.quantity;
-    productMap.set(name, entry);
-  }
+            // Add orderItems
+            for (const item of orderItems) {
+                const name = item.product.name;
+                const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+                entry.quantity += item.quantity;
+                productMap.set(name, entry);
+            }
 
-  // Add incomingItems
-  for (const item of incomingItems) {
-    const name = item.product.name;
-    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
-    entry.incoming += item.quantity;
-    entry.quantity += item.quantity;
-    productMap.set(name, entry);
-  }
+            // Add incomingItems
+            for (const item of incomingItems) {
+                const name = item.product.name;
+                const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+                entry.incoming += item.quantity;
+                entry.quantity += item.quantity;
+                productMap.set(name, entry);
+            }
 
-  // Add outgoingItems
-  for (const item of outgoingItems) {
-    const name = item.product.name;
-    const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
-    entry.outgoing += item.quantity;
-    entry.quantity += item.quantity;
-    productMap.set(name, entry);
-  }
+            // Add outgoingItems
+            for (const item of outgoingItems) {
+                const name = item.product.name;
+                const entry = productMap.get(name) ?? { quantity: 0, incoming: 0, outgoing: 0 };
+                entry.outgoing += item.quantity;
+                entry.quantity += item.quantity;
+                productMap.set(name, entry);
+            }
 
-  // Return array of aggregated data
-  return Array.from(productMap, ([name, data]) => ({
-    name,
-    quantity: data.quantity,
-    incoming: data.incoming,
-    outgoing: data.outgoing,
-  }));
-}),
+            // Return array of aggregated data
+            return Array.from(productMap, ([name, data]) => ({
+                name,
+                quantity: data.quantity,
+                incoming: data.incoming,
+                outgoing: data.outgoing,
+            }));
+        }),
 
     getOne: protectedProcedure
         .input(
@@ -429,7 +547,9 @@ export const orderRouter = createTRPCRouter({
                     },
                     shop: {
                         select: {
-                            name: true
+                            name: true,
+                            address: true,
+                            phone: true
                         }
                     },
                     employee: {
@@ -449,11 +569,29 @@ export const orderRouter = createTRPCRouter({
                 sort: z.string().nullish(),
                 search: z.string().nullish(),
                 status: z.string().nullish(),
+                date: z.string().nullish(),
+                paymentStatus: z.string().nullish()
             })
         )
         .query(async ({ input, ctx }) => {
             const employee = ctx.employee
-            const { page, limit, sort, search, status } = input;
+            const { page, limit, sort, search, status, date, paymentStatus } = input;
+
+            const targetDate = date ? new Date(date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
 
             const [orders, totalCount] = await Promise.all([
                 db.order.findMany({
@@ -466,6 +604,11 @@ export const orderRouter = createTRPCRouter({
                             },
                         }),
                         ...(status && { status }),
+                        ...(paymentStatus && { paymentStatus }),
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        }
                     },
                     include: {
                         shop: {
@@ -495,7 +638,12 @@ export const orderRouter = createTRPCRouter({
                                 mode: "insensitive",
                             },
                         }),
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        },
                         ...(status && { status }),
+                        ...(paymentStatus && { paymentStatus }),
                     },
                 }),
             ]);
@@ -509,10 +657,28 @@ export const orderRouter = createTRPCRouter({
                 sort: z.string().nullish(),
                 search: z.string().nullish(),
                 status: z.string().nullish(),
+                date: z.string().nullish(),
+                paymentStatus: z.string().nullish()
             })
         )
         .query(async ({ input }) => {
-            const { page, limit, sort, search, status } = input;
+            const { page, limit, sort, search, status, date, paymentStatus } = input;
+
+            const targetDate = date ? new Date(date) : new Date()
+
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ))
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ))
 
             const [orders, totalCount] = await Promise.all([
                 db.order.findMany({
@@ -524,11 +690,21 @@ export const orderRouter = createTRPCRouter({
                             },
                         }),
                         ...(status && { status }),
+                        ...(paymentStatus && { paymentStatus }),
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        }
                     },
                     include: {
                         shop: {
                             select: {
                                 name: true,
+                            }
+                        },
+                        employee: {
+                            select: {
+                                name: true
                             }
                         },
                         _count: {
@@ -553,6 +729,11 @@ export const orderRouter = createTRPCRouter({
                             },
                         }),
                         ...(status && { status }),
+                        ...(paymentStatus && { paymentStatus }),
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        }
                     },
                 }),
             ]);
