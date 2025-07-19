@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { createTRPCRouter, srProcedure } from "../init";
-import { ORDER_STATUS } from "@/constant";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
 
 export const userDashboardRouter = createTRPCRouter({
     get: srProcedure.query(async ({ ctx }) => {
@@ -31,7 +31,7 @@ export const userDashboardRouter = createTRPCRouter({
             await db.order.aggregate({
                 where: {
                     employeeId: employee.id,
-                    status: ORDER_STATUS.Due
+                    paymentStatus: PAYMENT_STATUS.Due
                 },
                 _sum: {
                     dueAmount: true

@@ -4,6 +4,7 @@ import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } fro
 import { db } from "@/lib/db";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS, ORDER_STATUS_SR, PAYMENT_STATUS } from "@/constant";
+import { fr } from "date-fns/locale";
 
 export const orderRouter = createTRPCRouter({
     createOne: srProcedure
@@ -36,8 +37,13 @@ export const orderRouter = createTRPCRouter({
                     quantity: Number(item.quantity),
                     productId: item.productId,
                     total: Number(item.price) * Number(item.quantity),
-                    price: Number(item.price)
+                    price: Number(item.price),
+                    freeQuantity: item.freeQuantity ? Number(item.freeQuantity) : 0
                 }))
+
+                const totalFreeQuantity = orderItems.reduce((acc, item) => {
+                    return acc + (item.freeQuantity ? parseInt(item.freeQuantity) : 0);
+                }, 0);
 
                 await db.order.create({
                     data: {
@@ -46,6 +52,7 @@ export const orderRouter = createTRPCRouter({
                         totalAmount: total,
                         status: ORDER_STATUS.Placed,
                         employeeId: employee.id,
+                        freeQuantity: totalFreeQuantity,
                         orderItems: {
                             createMany: {
                                 data: items
@@ -422,22 +429,23 @@ export const orderRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             const employee = ctx.employee;
-            const targetDate = input.date ? new Date(input.date) : new Date()
+            const targetDate = input.date ? new Date(input.date) : new Date();
 
             const dayStart = new Date(Date.UTC(
                 targetDate.getUTCFullYear(),
                 targetDate.getUTCMonth(),
                 targetDate.getUTCDate(),
                 0, 0, 0
-            ))
+            ));
 
             const dayEnd = new Date(Date.UTC(
                 targetDate.getUTCFullYear(),
                 targetDate.getUTCMonth(),
                 targetDate.getUTCDate(),
                 23, 59, 59, 999
-            ))
+            ));
 
+            // 1. Fetch OrderItems by employee and date
             const orderItems = await db.orderItem.findMany({
                 where: {
                     createdAt: {
@@ -445,44 +453,70 @@ export const orderRouter = createTRPCRouter({
                         lte: dayEnd,
                     },
                     order: {
-                        employeeId: employee.id
-                    }
+                        employeeId: employee.id,
+                    },
                 },
                 select: {
+                    quantity: true,
+                    freeQuantity: true,
                     product: {
                         select: {
-                            name: true,
                             id: true,
+                            name: true,
                             price: true,
-                            outgoingItems: {
-                                select: {
-                                    quantity: true
-                                }
-                            },
                             incomingItems: {
+                                where: {
+                                    createdAt: {
+                                        gte: dayStart,
+                                        lte: dayEnd,
+                                    },
+                                },
                                 select: {
-                                    quantity: true
-                                }
-                            }
+                                    quantity: true,
+                                },
+                            },
                         },
                     },
-                    quantity: true,
                 },
-            })
+            });
 
-            const productMap = new Map<string, { id: string; name: string; quantity: number, price: number }>();
+            const productMap = new Map<string, {
+                id: string;
+                name: string;
+                price: number;
+                quantity: number;
+                freeQuantity: number;
+                returnedQuantity: number;
+            }>();
 
             for (const item of orderItems) {
-                const { id, name } = item.product;
+                const { id, name, price, incomingItems } = item.product;
+
+                const returnedQty = incomingItems.reduce((sum, i) => sum + i.quantity, 0);
+
                 if (productMap.has(id)) {
-                    productMap.get(id)!.quantity += item.quantity;
+                    const existing = productMap.get(id)!;
+                    existing.quantity += item.quantity;
+                    existing.freeQuantity += item.freeQuantity;
+                    existing.returnedQuantity += returnedQty;
                 } else {
-                    productMap.set(id, { id, name, quantity: item.quantity, price: item.product.price });
+                    productMap.set(id, {
+                        id,
+                        name,
+                        price,
+                        quantity: item.quantity,
+                        freeQuantity: item.freeQuantity,
+                        returnedQuantity: returnedQty,
+                    });
                 }
             }
 
+            console.log(Array.from(productMap.values()))
+
+
             return Array.from(productMap.values());
         }),
+
     summary: adminProcedure
         .input(
             z.object({

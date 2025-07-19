@@ -54,6 +54,13 @@ export const columns: ColumnDef<OrderOmit>[] = [
         )
     },
     {
+        accessorKey: "f. quantity",
+        header: "F. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.freeQuantity}</p>
+        )
+    },
+    {
         accessorKey: "r. quantity",
         header: "R. Quantity",
         cell: ({ row }) => (

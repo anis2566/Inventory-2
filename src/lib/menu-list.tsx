@@ -17,6 +17,7 @@ import {
     CalendarDays,
     Calendar1,
     DollarSign,
+    ScrollText,
 } from "lucide-react";
 
 type Submenu = {
@@ -139,6 +140,12 @@ export function getAdminMenuList(pathname: string): Group[] {
                             label: "Summary",
                             active: pathname === "/dashboard/order/summary",
                             icon: NotebookText,
+                        },
+                        {
+                            href: "/dashboard/order/invoice",
+                            label: "Invoices",
+                            active: pathname === "/dashboard/order/invoice",
+                            icon: ScrollText,
                         },
                     ],
                 },

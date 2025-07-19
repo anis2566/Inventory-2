@@ -155,6 +155,7 @@ model Order {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   totalQuantity Int
   returnedQuantity Int  @default(0)
+  freeQuantity Int  @default(0)
   damageQuantity Int  @default(0)
   totalAmount Float
   paidAmount  Float  @default(0)
@@ -196,6 +197,7 @@ model OrderItem {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   price    Int
   quantity Int
+  freeQuantity Int  @default(0)
   total    Int
 
   productId String  @db.ObjectId
@@ -222,6 +224,7 @@ model OrderItem {
 model Outgoing {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   totalQuantity Int
+  freeQuantity Int  @default(0)
   total Int
 
   employeeId String   @db.ObjectId
@@ -236,6 +239,7 @@ model Outgoing {
 model OutgoingItem {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   quantity Int
+  freeQuantity Int  @default(0)
 
   outgoingId String   @db.ObjectId
   outgoing   Outgoing @relation(fields: [outgoingId], references: [id], onDelete: Cascade)

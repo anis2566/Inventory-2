@@ -38,9 +38,23 @@ export const columns: ColumnDef<OutgoingOmit>[] = [
     },
     {
         accessorKey: "quantity",
-        header: "T. Quantity",
+        header: "Quantity",
         cell: ({ row }) => (
             <p className="truncate">{row.original.totalQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "f. quantity",
+        header: "F. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.freeQuantity}</p>
+        )
+    },
+    {
+        accessorKey: "t. quantity",
+        header: "T. Quantity",
+        cell: ({ row }) => (
+            <p className="truncate">{row.original.totalQuantity + row.original.freeQuantity}</p>
         )
     },
     {

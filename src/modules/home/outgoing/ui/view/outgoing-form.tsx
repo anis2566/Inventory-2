@@ -86,7 +86,8 @@ export const OutgoingForm = () => {
                 quantity: item.quantity.toString(),
                 productId: item.id,
                 name: item.name,
-                price: item.price.toString()
+                price: item.price.toString(),
+                freeQuantity: item.freeQuantity?.toString()
             })) || [],
         },
     })

@@ -76,6 +76,8 @@ export const SummaryView = () => {
                             <TableHead>SL</TableHead>
                             <TableHead>Order</TableHead>
                             <TableHead>Quantity</TableHead>
+                            <TableHead>F. Quantity</TableHead>
+                            <TableHead>T. Quantity</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -85,6 +87,8 @@ export const SummaryView = () => {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{order.name}</TableCell>
                                     <TableCell>{order.quantity}</TableCell>
+                                    <TableCell>{order.freeQuantity}</TableCell>
+                                    <TableCell>{order.quantity + order.freeQuantity}</TableCell>
                                 </TableRow>
                             ))
                         }

@@ -13,6 +13,7 @@ import { userRouter } from './user';
 import { userDashboardRouter } from './user-dashboard';
 import { incomeRouter } from './income';
 import { expenseRouter } from './expense';
+import { adminDashboardRouter } from './admin-dashboard';
 
 export const appRouter = createTRPCRouter({
     category: categoryRouter,
@@ -28,7 +29,8 @@ export const appRouter = createTRPCRouter({
     userDashboard: userDashboardRouter,
     report: reportRouter,
     income: incomeRouter,
-    expense: expenseRouter
+    expense: expenseRouter,
+    adminDashboard: adminDashboardRouter,
 });
 
 export type AppRouter = typeof appRouter;

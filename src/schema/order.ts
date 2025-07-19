@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const OrderItemSchema = z.object({
     quantity: z.string().min(1, { message: "required" }),
+    freeQuantity: z.string().optional(),
     productId: z.string().min(1, { message: "required" }),
     price: z.string().min(1, { message: "required" }),
     name: z.string().min(1, { message: "required" })

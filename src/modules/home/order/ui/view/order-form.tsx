@@ -43,6 +43,7 @@ export const OrderForm = () => {
     const [quantity, setQuantity] = useState("")
     const [price, setPrice] = useState("")
     const [openProduct, setOpenProduct] = useState(false)
+    const [freeQuantity, setFreeQuantity] = useState("")
 
     const [filter] = useOrderFilter()
 
@@ -97,13 +98,14 @@ export const OrderForm = () => {
             return
         }
 
-        form.setValue("orderItems", [...form.getValues().orderItems, { quantity, productId, price, name: product }])
+        form.setValue("orderItems", [...form.getValues().orderItems, { quantity, productId, price, name: product, freeQuantity }])
 
         form.trigger("orderItems")
         setProductId("")
         setSearchProduct("")
         setProduct("")
         setQuantity("")
+        setFreeQuantity("")
     }
 
     const handleRemoveProduct = (id: string) => {
@@ -285,6 +287,8 @@ export const OrderForm = () => {
 
                             <Input type="number" placeholder="Quantity" className="mt-2" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
 
+                            <Input type="number" placeholder="Free Quantity" className="mt-4" value={freeQuantity} onChange={(e) => setFreeQuantity(e.target.value)} />
+
                             <Button variant="gray" type="button" onClick={() => handleAddProduct()} disabled={!product || !quantity || !price || isPending}>
                                 <Plus className="h-4 w-4" />
                                 Add
@@ -299,6 +303,7 @@ export const OrderForm = () => {
                                         <TableHead className="w-[100px]">Product</TableHead>
                                         <TableHead className="w-[100px]">Price</TableHead>
                                         <TableHead className="w-[100px]">Quantity</TableHead>
+                                        <TableHead className="w-[100px]">F. Quantity</TableHead>
                                         <TableHead className="w-[100px]">Total</TableHead>
                                         <TableHead className="w-[100px]">Action</TableHead>
                                     </TableRow>
@@ -314,6 +319,7 @@ export const OrderForm = () => {
                                                 <TableCell className="flex items-center gap-2">
                                                     <Input type="number" value={product.quantity} onChange={(e) => handleQuantityChange(product.productId, e.target.value)} className="min-w-[70px]" />
                                                 </TableCell>
+                                                <TableCell>{product.freeQuantity}</TableCell>
                                                 <TableCell>{Number(product.price) * Number(product.quantity)}</TableCell>
                                                 <TableCell>
                                                     <Button variant="gray" size="icon" type="button" onClick={() => handleRemoveProduct(product.productId)}>

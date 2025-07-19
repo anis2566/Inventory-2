@@ -113,7 +113,7 @@ export const MobileOrderView = ({ orders, totalOrderCount, totalAmount, totalCou
     };
 
     return (
-        <div className="w-full md:hidden space-y-4 bg-gray-900 min-h-screen p-2">
+        <div className="w-full md:hidden space-y-4 bg-gray-900 min-h-screen">
             {/* Summary Stats */}
             <div className="grid grid-cols-2 gap-3">
                 <Card className="p-3 bg-gray-800 border-gray-700">

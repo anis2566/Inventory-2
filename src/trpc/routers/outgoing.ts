@@ -46,15 +46,16 @@ export const outgoingRouter = createTRPCRouter({
                     }
                 }
 
-                console.log(items)
-
                 const total = items.reduce((acc, item) => acc + Number(item.quantity) * Number(item.price), 0);
 
                 const totalQuantity = items.reduce((acc, item) => acc + Number(item.quantity), 0);
 
+                const totalFreeQuantity = items.reduce((acc, item) => acc + (item.freeQuantity ? parseInt(item.freeQuantity) : 0), 0);
+
                 const formatedItems = items.map((item) => ({
                     quantity: Number(item.quantity),
-                    productId: item.productId
+                    productId: item.productId,
+                    freeQuantity: item.freeQuantity ? Number(item.freeQuantity) : 0
                 }))
 
                 await db.$transaction(async (tx) => {
@@ -67,6 +68,7 @@ export const outgoingRouter = createTRPCRouter({
                                 }
                             },
                             total,
+                            freeQuantity: totalFreeQuantity,
                             totalQuantity
                         },
                     });
@@ -354,7 +356,7 @@ export const outgoingRouter = createTRPCRouter({
                 23, 59, 59, 999
             ))
 
-            const [outgoings, totalCount] = await Promise.all([
+            const [outgoings, totalCount, outgoingOverview] = await Promise.all([
                 db.outgoing.findMany({
                     where: {
                         employeeId: employee.id,
@@ -390,8 +392,16 @@ export const outgoingRouter = createTRPCRouter({
                         })
                     },
                 }),
+                db.outgoing.aggregate({
+                    _sum: {
+                        total: true
+                    },
+                    _count: {
+                        _all: true
+                    }
+                })
             ]);
-            return { outgoings, totalCount };
+            return { outgoings, totalCount, totalOutgoingCount: outgoingOverview._count._all ?? 0, totalAmount: outgoingOverview._sum.total ?? 0 };
         }),
     getMany: adminProcedure
         .input(

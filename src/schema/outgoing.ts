@@ -4,7 +4,8 @@ export const OutgoingItemSchema = z.object({
     quantity: z.string().min(1, { message: "required" }),
     productId: z.string().min(1, { message: "required" }),
     name: z.string().min(1, { message: "required" }),
-    price: z.string().min(1, { message: "required" })
+    price: z.string().min(1, { message: "required" }),
+    freeQuantity: z.string().optional(),
 })
 
 export const OutgoingSchema = z.object({
