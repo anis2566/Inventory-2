@@ -61,7 +61,7 @@ export function DataTable<TData extends HasId, TValue>({
     });
 
     return (
-        <div className="border p-3 space-y-4 bg-gray-800 border-gray-700">
+        <div className="hidden md:block border p-3 space-y-4 bg-gray-800 border-gray-700">
             <div>
                 <h1 className="text-xl font-semibold text-white">Order List</h1>
                 <p className="text-sm text-gray-400">{totalCount} orders found</p>

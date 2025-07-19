@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/loading-button";
 
@@ -89,7 +89,6 @@ export const StatusModal = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
-                                        <FormLabel className="text-white">Status</FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Select status" />

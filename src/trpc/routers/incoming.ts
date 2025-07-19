@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
+import { adminProcedure, createTRPCRouter, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { IncomingSchema } from "@/schema/incoming";
 import { PRODUCT_CONDITION } from "@/constant";
@@ -8,7 +8,7 @@ import { PRODUCT_CONDITION } from "@/constant";
 export const incominggRouter = createTRPCRouter({
     createOne: adminProcedure
         .input(IncomingSchema)
-        .mutation(async ({ input, ctx }) => {
+        .mutation(async ({ input }) => {
             const { items, employeeId } = input;
 
             try {

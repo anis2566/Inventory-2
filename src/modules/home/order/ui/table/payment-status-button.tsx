@@ -6,7 +6,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 import { cn } from "@/lib/utils";
 import { PAYMENT_STATUS } from "@/constant";
-import { useOrderStatus } from "@/hooks/use-order";
+import { usePaymentStatus } from "@/hooks/use-order";
 
 interface DeleteButtonProps {
     id: string;
@@ -14,7 +14,7 @@ interface DeleteButtonProps {
 }
 
 export const PaymentStatusButton = ({ id, status }: DeleteButtonProps) => {
-    const { onOpen } = useOrderStatus();
+    const { onOpen } = usePaymentStatus();
 
     return (
         <DropdownMenuItem
@@ -22,7 +22,7 @@ export const PaymentStatusButton = ({ id, status }: DeleteButtonProps) => {
             onClick={() => onOpen(id, status)}
         >
             <RefreshCcw className="w-5 h-5" />
-            <p>Change status</p>
+            <p>Payment status</p>
         </DropdownMenuItem>
     )
 }

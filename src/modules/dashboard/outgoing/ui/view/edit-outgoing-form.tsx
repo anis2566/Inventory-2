@@ -95,7 +95,7 @@ export const EditOutgoingForm = ({ id }: Props) => {
             return
         }
 
-        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product }])
+        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product, price }])
 
         form.trigger("items")
         setProductId("")

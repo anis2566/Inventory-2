@@ -15,11 +15,14 @@ import { Badge } from "@/components/ui/badge";
 
 import { Order } from "@/generated/prisma";
 import { PaymentStatusButton } from "./payment-status-button";
-import {  PAYMENT_STATUS } from "@/constant";
+import { PAYMENT_STATUS } from "@/constant";
+import { OrderStatusButton } from "./return-status-button";
 
-type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
+type OrderOmit = Omit<Order, "createdAt" | "updatedAt" | "date" | "deliveryDate"> & {
     createdAt: string;
     updatedAt: string;
+    date: string;
+    deliveryDate: string | null;
     shop: {
         name: string;
     };
@@ -135,6 +138,7 @@ export const columns: ColumnDef<OrderOmit>[] = [
                             </Link>
                         </DropdownMenuItem>
                         <PaymentStatusButton id={row.original.id} status={row.original.paymentStatus as PAYMENT_STATUS} />
+                        <OrderStatusButton id={row.original.id} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

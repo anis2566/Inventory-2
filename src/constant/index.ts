@@ -33,6 +33,11 @@ export enum ORDER_STATUS {
     Cancelled = 'Cancelled'
 }
 
+export enum ORDER_STATUS_SR {
+    Damaged = 'Damaged',
+    Returned = 'Returned'
+}
+
 export enum PAYMENT_STATUS {
     Unpaid = 'Unpaid',
     Due = 'Due',
@@ -44,4 +49,29 @@ export enum PRODUCT_CONDITION {
     Good = 'Good',
     Damaged = 'Damaged',
     Returned = 'Returned'
+}
+
+export enum MONTHS {
+    January = 'January',
+    February = 'February',
+    March = 'March',
+    April = 'April',
+    May = 'May',
+    June = 'June',
+    July = 'July',
+    August = 'August',
+    September = 'September',
+    October = 'October',
+    November = 'November',
+    December = 'December'
+}
+
+export enum INCOME_TYPE {
+    Sale = 'Sale',
+    Other = 'Other'
+}
+
+export enum EXPENSE_TYPE {
+    Purchase = 'Purchase',
+    Other = 'Other'
 }

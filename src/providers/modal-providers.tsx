@@ -21,6 +21,11 @@ import { PaymentStatusAdminModal } from "@/modules/dashboard/order/ui/modal/paym
 import { StatusModal } from "@/modules/dashboard/order/ui/modal/status-modal";
 import { DeleteOrderModal } from "@/modules/dashboard/order/ui/modal/delete-modal";
 import { DeleteManyOrderModal } from "@/modules/dashboard/order/ui/modal/delete-many-modal";
+import { OrderStatusSrModal } from "@/modules/home/order/ui/modal/return-status-modal";
+import { DeleteIncomeModal } from "@/modules/dashboard/income/ui/modal/delete-modal";
+import { DeleteManyIncomeModal } from "@/modules/dashboard/income/ui/modal/delete-many-modal";
+import { DeleteExpenseModal } from "@/modules/dashboard/expense/ui/modal/delete-modal";
+import { DeleteManyExpenseModal } from "@/modules/dashboard/expense/ui/modal/delete-many-modal";
 
 export const ModalProvider = () => {
     return (
@@ -44,6 +49,11 @@ export const ModalProvider = () => {
             <StatusModal />
             <DeleteOrderModal />
             <DeleteManyOrderModal />
+            <OrderStatusSrModal />
+            <DeleteIncomeModal />
+            <DeleteManyIncomeModal />
+            <DeleteExpenseModal />
+            <DeleteManyExpenseModal />
         </Suspense>
     )
 }

@@ -47,7 +47,7 @@ export const PaymentStatusModal = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.order.getMany.queryOptions({
+                trpc.order.getManyBySr.queryOptions({
                     ...filter,
                 })
             );
@@ -99,7 +99,6 @@ export const PaymentStatusModal = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
-                                        <FormLabel className="text-white">Status</FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Select status" />
@@ -107,7 +106,7 @@ export const PaymentStatusModal = () => {
                                         </FormControl>
                                         <SelectContent>
                                             {
-                                                Object.values(PAYMENT_STATUS).slice(1,3).map((status) => (
+                                                Object.values(PAYMENT_STATUS).slice(1, 3).map((status) => (
                                                     <SelectItem key={status} value={status}>{status}</SelectItem>
                                                 ))
                                             }

@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface DueCardProps {
     dueAmount: number;
@@ -7,16 +8,6 @@ interface DueCardProps {
 }
 
 export const DueCard = ({ dueAmount, dueShops }: DueCardProps) => {
-    // Format currency with proper commas and currency symbol
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(amount);
-    };
-
     return (
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -31,7 +22,7 @@ export const DueCard = ({ dueAmount, dueShops }: DueCardProps) => {
                 {/* Main amount display */}
                 <div className="flex items-baseline gap-1">
                     <div className="text-3xl font-bold text-white font-bengali tracking-wider">
-                        ৳{formatCurrency(dueAmount)}
+                        ৳{dueAmount}
                     </div>
                     {dueAmount > 0 && (
                         <div className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full">

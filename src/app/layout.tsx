@@ -28,10 +28,10 @@ const notoSansBengali = Noto_Sans_Bengali({
 })
 export const metadata: Metadata = {
   title: {
-    template: "%s | POS",
-    default: "POS | Armanitola Library"
+    template: "%s | Hayat Haven",
+    default: "POS | Hayat Haven"
   },
-  description: "POS Armanitola Library",
+  description: "POS Hayat Haven",
 };
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-import { ORDER_STATUS, PAYMENT_STATUS, ROLE } from "@/constant";
+import { ORDER_STATUS, ORDER_STATUS_SR, PAYMENT_STATUS, ROLE } from "@/constant";
 import { create } from "zustand";
 
 interface DeleteOrderState {
@@ -29,6 +29,20 @@ export const useDeleteManyOrder = create<DeleteManyOrderState>((set) => ({
     onClose: () => set({ isOpen: false, ids: [] }),
 }));
 
+
+interface OrderStatusSrState {
+    isOpen: boolean;
+    orderId: string;
+    onOpen: (id: string) => void;
+    onClose: () => void;
+}
+
+export const useOrderStatusSr = create<OrderStatusSrState>((set) => ({
+    isOpen: false,
+    orderId: "",
+    onOpen: (id: string) => set({ isOpen: true, orderId: id }),
+    onClose: () => set({ isOpen: false, orderId: "", }),
+}));
 
 interface OrderStatusState {
     isOpen: boolean;

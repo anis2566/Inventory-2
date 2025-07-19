@@ -4,7 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { useTRPC } from "@/trpc/client";
 import Filter from "./filter";
@@ -34,21 +34,32 @@ export const ProductReportView = () => {
                             <TableHead>Product Name</TableHead>
                             <TableHead>Price</TableHead>
                             <TableHead>Quantity</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Returned Quantity</TableHead>
+                            <TableHead>T. Amount</TableHead>
+                            <TableHead>R. Quantity</TableHead>
+                            <TableHead>R. Amount</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {data.map(item => (
                             <TableRow key={item.productName}>
                                 <TableCell>{item.productName}</TableCell>
-                                <TableCell>{item.price}</TableCell>
+                                <TableCell className="font-bengali tracking-wider">৳{item.price}</TableCell>
                                 <TableCell>{item.totalQuantity}</TableCell>
-                                <TableCell>{item.totalAmount}</TableCell>
+                                <TableCell className="font-bengali tracking-wider">৳{item.totalAmount}</TableCell>
                                 <TableCell>{item.returnedQuantity}</TableCell>
+                                <TableCell className="font-bengali tracking-wider">৳{item.price * item.returnedQuantity}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
+                    <TableFooter>
+                        <TableRow className="bg-gray-900 font-semibold text-white">
+                            <TableCell colSpan={2}>Total</TableCell>
+                            <TableCell>{data.reduce((total, item) => total + item.totalQuantity, 0)}</TableCell>
+                            <TableCell className="font-bengali tracking-wider">৳{data.reduce((total, item) => total + item.totalAmount, 0)}</TableCell>
+                            <TableCell>{data.reduce((total, item) => total + item.returnedQuantity, 0)}</TableCell>
+                            <TableCell className="font-bengali tracking-wider">৳{data.reduce((total, item) => total + item.price * item.returnedQuantity, 0)}</TableCell>
+                        </TableRow>
+                    </TableFooter>
                 </Table>
             </CardContent>
         </Card>

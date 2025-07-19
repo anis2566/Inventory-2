@@ -3,7 +3,7 @@ import { z } from "zod";
 import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { OrderSchema } from "@/schema/order";
-import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
+import { ORDER_STATUS, ORDER_STATUS_SR, PAYMENT_STATUS } from "@/constant";
 
 export const orderRouter = createTRPCRouter({
     createOne: srProcedure
@@ -234,6 +234,66 @@ export const orderRouter = createTRPCRouter({
                             paymentStatus: status,
                             paidAmount: 0,
                             dueAmount: existingOrder.totalAmount
+                        }
+                    })
+                }
+
+                return { success: true, message: "Order updated" }
+            } catch (error) {
+                console.error("Error updating order", error);
+                return { success: false, message: "Internal Server Error" }
+            }
+
+        }),
+    statusBySr: srProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                status: z.enum(ORDER_STATUS_SR),
+                productId: z.string(),
+                quantity: z.string(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { id, status, productId, quantity } = input;
+
+            try {
+                const existingOrder = await db.order.findUnique({
+                    where: { id },
+                })
+
+                if (!existingOrder) {
+                    return { success: false, message: "Order not found" }
+                }
+
+                const product = await db.product.findUnique({
+                    where: { id: productId, orderItems: { some: { orderId: id } } },
+                })
+
+                if (!product) {
+                    return { success: false, message: "Product not found" }
+                }
+
+                if (status === ORDER_STATUS_SR.Damaged) {
+                    const damageAmount = Number(quantity) * product.price;
+
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            damageQuantity: Number(quantity),
+                            totalAmount: existingOrder.totalAmount - damageAmount,
+                            dueAmount: existingOrder.totalAmount - damageAmount
+                        }
+                    })
+                } else if (status === ORDER_STATUS_SR.Returned) {
+                    const returnedAmount = Number(quantity) * product.price;
+
+                    await db.order.update({
+                        where: { id },
+                        data: {
+                            returnedQuantity: Number(quantity),
+                            totalAmount: existingOrder.totalAmount - returnedAmount,
+                            dueAmount: existingOrder.totalAmount - returnedAmount
                         }
                     })
                 }
@@ -593,15 +653,17 @@ export const orderRouter = createTRPCRouter({
                 23, 59, 59, 999
             ))
 
-            const [orders, totalCount] = await Promise.all([
+            const [orders, totalCount, orderOverview] = await Promise.all([
                 db.order.findMany({
                     where: {
                         employeeId: employee.id,
                         ...(search && {
-                            name: {
-                                contains: search,
-                                mode: "insensitive",
-                            },
+                            shop: {
+                                name: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                }
+                            }
                         }),
                         ...(status && { status }),
                         ...(paymentStatus && { paymentStatus }),
@@ -633,10 +695,12 @@ export const orderRouter = createTRPCRouter({
                     where: {
                         employeeId: employee.id,
                         ...(search && {
-                            name: {
-                                contains: search,
-                                mode: "insensitive",
-                            },
+                            shop: {
+                                name: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                }
+                            }
                         }),
                         createdAt: {
                             gte: dayStart,
@@ -646,8 +710,24 @@ export const orderRouter = createTRPCRouter({
                         ...(paymentStatus && { paymentStatus }),
                     },
                 }),
+                db.order.aggregate({
+                    where: {
+                        employeeId: employee.id,
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd
+                        },
+                    },
+                    _count: {
+                        _all: true
+                    },
+                    _sum: {
+                        totalAmount: true
+                    }
+                })
             ]);
-            return { orders, totalCount };
+
+            return { orders, totalCount, totalOrderCount: orderOverview._count._all ?? 0, totalAmount: orderOverview._sum.totalAmount ?? 0 };
         }),
     getMany: adminProcedure
         .input(
@@ -722,14 +802,6 @@ export const orderRouter = createTRPCRouter({
                 }),
                 db.order.count({
                     where: {
-                        ...(search && {
-                            name: {
-                                contains: search,
-                                mode: "insensitive",
-                            },
-                        }),
-                        ...(status && { status }),
-                        ...(paymentStatus && { paymentStatus }),
                         createdAt: {
                             gte: dayStart,
                             lte: dayEnd

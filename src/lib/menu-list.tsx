@@ -14,6 +14,9 @@ import {
     Store,
     LogIn,
     NotepadTextDashed,
+    CalendarDays,
+    Calendar1,
+    DollarSign,
 } from "lucide-react";
 
 type Submenu = {
@@ -115,21 +118,27 @@ export function getAdminMenuList(pathname: string): Group[] {
                 },
                 {
                     href: "",
-                    label: "Employee",
-                    active: pathname.includes("/dashboard/employee"),
-                    icon: Users,
+                    label: "Order",
+                    active: pathname.includes("/dashboard/order"),
+                    icon: ShoppingBag,
                     submenus: [
                         {
-                            href: "/dashboard/employee/new",
+                            href: "/dashboard/order/new",
                             label: "New",
-                            active: pathname === "/dashboard/employee/new",
+                            active: pathname === "/dashboard/order/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/dashboard/employee",
+                            href: "/dashboard/order",
                             label: "List",
-                            active: pathname === "/dashboard/employee",
+                            active: pathname === "/dashboard/order",
                             icon: List,
+                        },
+                        {
+                            href: "/dashboard/order/summary",
+                            label: "Summary",
+                            active: pathname === "/dashboard/order/summary",
+                            icon: NotebookText,
                         },
                     ],
                 },
@@ -155,27 +164,21 @@ export function getAdminMenuList(pathname: string): Group[] {
                 },
                 {
                     href: "",
-                    label: "Order",
-                    active: pathname.includes("/dashboard/order"),
-                    icon: ShoppingBag,
+                    label: "Employee",
+                    active: pathname.includes("/dashboard/employee"),
+                    icon: Users,
                     submenus: [
                         {
-                            href: "/dashboard/order/new",
+                            href: "/dashboard/employee/new",
                             label: "New",
-                            active: pathname === "/dashboard/order/new",
+                            active: pathname === "/dashboard/employee/new",
                             icon: PlusCircle,
                         },
                         {
-                            href: "/dashboard/order",
+                            href: "/dashboard/employee",
                             label: "List",
-                            active: pathname === "/dashboard/order",
+                            active: pathname === "/dashboard/employee",
                             icon: List,
-                        },
-                        {
-                            href: "/dashboard/order/summary",
-                            label: "Summary",
-                            active: pathname === "/dashboard/order/summary",
-                            icon: NotebookText,
                         },
                     ],
                 },
@@ -235,6 +238,51 @@ export function getAdminMenuList(pathname: string): Group[] {
             ],
         },
         {
+            groupLabel: "Income & Expense",
+            menus: [
+                {
+                    href: "/dashboard/income",
+                    label: "Income",
+                    active: pathname === "/dashboard/income",
+                    icon: DollarSign,
+                    submenus: [
+                        {
+                            href: "/dashboard/income/new",
+                            label: "New",
+                            active: pathname === "/dashboard/income/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/income",
+                            label: "List",
+                            active: pathname === "/dashboard/income",
+                            icon: List,
+                        },
+                    ],
+                },
+                {
+                    href: "/dashboard/expense",
+                    label: "Expense",
+                    active: pathname === "/dashboard/expense",
+                    icon: DollarSign,
+                    submenus: [
+                        {
+                            href: "/dashboard/expense/new",
+                            label: "New",
+                            active: pathname === "/dashboard/expense/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/expense",
+                            label: "List",
+                            active: pathname === "/dashboard/expense",
+                            icon: List,
+                        },
+                    ],
+                }
+            ],
+        },
+        {
             groupLabel: "Report",
             menus: [
                 {
@@ -267,12 +315,8 @@ export function getUserMenuList(pathname: string): Group[] {
                     active: pathname === "/",
                     icon: LayoutGrid,
                     submenus: [],
+
                 },
-            ],
-        },
-        {
-            groupLabel: "Main ",
-            menus: [
                 {
                     href: "",
                     label: "Order",
@@ -299,11 +343,6 @@ export function getUserMenuList(pathname: string): Group[] {
                         },
                     ],
                 },
-            ],
-        },
-        {
-            groupLabel: "Warehouse",
-            menus: [
                 {
                     href: "",
                     label: "Stock Out",
@@ -324,28 +363,23 @@ export function getUserMenuList(pathname: string): Group[] {
                         },
                     ],
                 },
-            ],
-        },
-        {
-            groupLabel: "Report",
-            menus: [
                 {
                     href: "",
-                    label: "Sales",
+                    label: "Report",
                     active: pathname.includes("/report"),
-                    icon: ShoppingBag,
+                    icon: NotepadText,
                     submenus: [
                         {
                             href: "/report/daily",
                             label: "Daily",
                             active: pathname === "/report/daily",
-                            icon: NotepadTextDashed,
+                            icon: CalendarDays,
                         },
                         {
                             href: "/report",
                             label: "Overview",
                             active: pathname === "/report",
-                            icon: NotepadTextDashed,
+                            icon: Calendar1,
                         },
                     ],
                 },

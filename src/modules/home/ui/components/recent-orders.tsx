@@ -1,11 +1,13 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Order } from "@/generated/prisma"
 import { Eye } from "lucide-react"
 import Link from "next/link"
 
-type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+import { Order } from "@/generated/prisma"
+
+type OrderOmit = Omit<Order, "createdAt" | "updatedAt" | "date" | "deliveryDate"> & {
     createdAt: string
     updatedAt: string
     shop: { name: string }

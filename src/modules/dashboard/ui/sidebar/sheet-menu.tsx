@@ -17,6 +17,7 @@ import {
 
 import { getAdminMenuList } from "@/lib/menu-list";
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const SheetMentu = () => {
     const pathname = usePathname();
@@ -56,42 +57,44 @@ export const SheetMentu = () => {
 
                 <nav className="h-full w-full">
                     <ul className="flex flex-col items-start space-y-1 px-2">
-                        {menuList.map(({ groupLabel, menus }, index) => (
-                            <li className={cn("w-full list-none", groupLabel ? "pt-5" : "")} key={index}>
-                                <p className="text-sm font-medium text-white px-4 pb-2 max-w-[248px] truncate">
-                                    {groupLabel}
-                                </p>
-                                {menus.map(
-                                    ({ href, label, icon: Icon, active, submenus }, index) =>
-                                        submenus.length === 0 ? (
-                                            <div className="w-full" key={index}>
-                                                <SheetClose className="w-full">
-                                                    <Button
-                                                        variant="ghost"
-                                                        className={cn(
-                                                            "w-full justify-start h-7 mb-1 hover:bg-gray-600 w-full",
-                                                            active && "bg-gray-600"
-                                                        )}
-                                                        asChild
-                                                    >
-                                                        <Link href={href} prefetch>
-                                                            <span
-                                                                className="mr-4"
-                                                            >
-                                                                <Icon size={18} className="text-gray-300" />
-                                                            </span>
-                                                            <p
-                                                                className="max-w-[200px] truncate text-gray-300">
-                                                                {label}
-                                                            </p>
-                                                        </Link>
-                                                    </Button>
-                                                </SheetClose>
-                                            </div>
-                                        ) : null
-                                )}
-                            </li>
-                        ))}
+                        <ScrollArea>
+                            {menuList.map(({ groupLabel, menus }, index) => (
+                                <li className={cn("w-full list-none", groupLabel ? "pt-5" : "")} key={index}>
+                                    <p className="text-sm font-medium text-white px-4 pb-2 max-w-[248px] truncate">
+                                        {groupLabel}
+                                    </p>
+                                    {menus.map(
+                                        ({ href, label, icon: Icon, active, submenus }, index) =>
+                                            submenus.length === 0 ? (
+                                                <div className="w-full" key={index}>
+                                                    <SheetClose className="w-full">
+                                                        <Button
+                                                            variant="ghost"
+                                                            className={cn(
+                                                                "w-full justify-start h-7 mb-1 hover:bg-gray-600 w-full",
+                                                                active && "bg-gray-600"
+                                                            )}
+                                                            asChild
+                                                        >
+                                                            <Link href={href} prefetch>
+                                                                <span
+                                                                    className="mr-4"
+                                                                >
+                                                                    <Icon size={18} className="text-gray-300" />
+                                                                </span>
+                                                                <p
+                                                                    className="max-w-[200px] truncate text-gray-300">
+                                                                    {label}
+                                                                </p>
+                                                            </Link>
+                                                        </Button>
+                                                    </SheetClose>
+                                                </div>
+                                            ) : null
+                                    )}
+                                </li>
+                            ))}
+                        </ScrollArea>
                     </ul>
                 </nav>
             </SheetContent>

@@ -37,13 +37,13 @@ export const SheetMentu = () => {
                     <SheetClose asChild>
                         <Link href="/user" className="flex items-center gap-2" prefetch>
                             <Image
-                                src="/logo.svg"
+                                src="/logo.png"
                                 alt="Logo"
                                 width={24}
                                 height={24}
                             />
                             <div>
-                                <h1 className="text-white font-semibold">Shikhonary</h1>
+                                <h1 className="text-white font-semibold">Hayat Haven</h1>
                             </div>
                         </Link>
                     </SheetClose>

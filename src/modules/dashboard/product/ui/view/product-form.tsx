@@ -170,20 +170,6 @@ export const ProductForm = () => {
 
                         <FormField
                             control={form.control}
-                            name="discountPrice"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Discount price</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Product discount price" {...field} disabled={isPending} type="number" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
                             name="stock"
                             render={({ field }) => (
                                 <FormItem>
