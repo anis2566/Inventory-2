@@ -1,6 +1,6 @@
 "use client";
 
-import { Order } from "@/generated/prisma";
+import { format } from "date-fns";
 import {
     Document,
     Page,
@@ -9,6 +9,9 @@ import {
     StyleSheet,
     Image
 } from "@react-pdf/renderer";
+
+import { Order } from "@/generated/prisma";
+import { numberToWords } from "@/lib/utils";
 
 const styles = StyleSheet.create({
     page: {
@@ -69,112 +72,116 @@ type OrderOmit = Omit<Order, "createdAt" | "updatedAt" | "date" | "deliveryDate"
     date: string;
     deliveryDate: string | null;
     shop: {
-        name: string;
-    };
+        name: string,
+        address: string,
+        phone: string | null
+    },
     orderItems: {
-        name: string;
-    }
+        quantity: number
+        price: number
+        product: {
+            name: string
+        }
+        freeQuantity: number
+        total: number
+    }[]
 };
 
 interface InvoiceProps {
-    order: OrderOmit[]
+    orders: OrderOmit[]
 }
 
-export const Invoice = ({ order }: InvoiceProps) => {
-    const items = [
-        { product: "Product A", qty: 2, rate: 50, amount: 100 },
-        { product: "Product B", qty: 1, rate: 150, amount: 150 },
-    ];
-
-    const subtotal = items.reduce((acc, i) => acc + i.amount, 0);
-    const discount = 20;
-    const total = subtotal - discount;
-
+export const Invoice = ({ orders }: InvoiceProps) => {
     return (
         <Document>
-            <Page
-                size={{ width: 420.945, height: 595.28 }}
-                style={styles.page}
-            >
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={[styles.centerText, styles.bold, { fontSize: 18 }]}>
-                        Hayat Haven Enterprise
-                    </Text>
-                    <Text style={[styles.centerText, { fontSize: 11 }]}>
-                        Dealer: Danish Foods Bangladesh Limited
-                    </Text>
-                    <Text style={styles.centerText}>11/1, A.C. Roy Road, Armanitola, Dhaka-1100</Text>
-                    <Text style={styles.centerText}>Phone: 01887-070720</Text>
-                    <Image
-                        source="/logo.png"
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 30,
-                            width: 50,
-                            height: 50,
-                        }}
-                    />
-                </View>
+            {
+                orders.map((order, index) => (
+                    <Page
+                        size={{ width: 420.945, height: 595.28 }}
+                        style={styles.page}
+                        key={index}
+                    >
+                        {/* Header */}
+                        <View style={styles.header}>
+                            <Text style={[styles.centerText, styles.bold, { fontSize: 18 }]}>
+                                Hayat Haven Enterprise
+                            </Text>
+                            <Text style={[styles.centerText, { fontSize: 11 }]}>
+                                Dealer: Danish Foods Bangladesh Limited
+                            </Text>
+                            <Text style={styles.centerText}>11/1, A.C. Roy Road, Armanitola, Dhaka-1100</Text>
+                            <Text style={styles.centerText}>Phone: 01887-070720</Text>
+                            <Image
+                                source="/logo.png"
+                                style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 30,
+                                    width: 50,
+                                    height: 50,
+                                }}
+                            />
+                        </View>
 
-                <View style={styles.divider} />
+                        <View style={styles.divider} />
 
-                {/* Customer Info */}
-                <View style={styles.section}>
-                    <View style={styles.row}>
-                        <Text style={{ marginBottom: 4, fontWeight: "bold" }}>Invoice No: #INV-001</Text>
-                        <Text>Date: 2025-07-19</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text>Shop: Anis Shop</Text>
-                    </View>
-                    <View>
-                        <Text style={{ marginBottom: 2 }}>armanitola, dhaka</Text>
-                        <Text style={{ marginBottom: 2 }}>01719-111111</Text>
-                    </View>
-                </View>
+                        {/* Customer Info */}
+                        <View style={styles.section}>
+                            <View style={styles.row}>
+                                <Text style={{ marginBottom: 4, fontWeight: "bold" }}>Invoice No: {order.orderId}</Text>
+                                <Text>Date: {format(order.date, "dd/MM/yyyy")}</Text>
+                            </View>
+                            <View style={styles.row}>
+                                <Text>Shop: {order.shop.name}</Text>
+                            </View>
+                            <View>
+                                <Text style={{ marginBottom: 2 }}>{order.shop.address}</Text>
+                                <Text style={{ marginBottom: 2 }}>{order.shop.phone}</Text>
+                            </View>
+                        </View>
 
-                {/* Table Header */}
-                <View style={styles.tableHeader}>
-                    <Text style={[styles.cell, styles.bold]}>No</Text>
-                    <Text style={[styles.cell, styles.bold]}>Product</Text>
-                    <Text style={[styles.cell, styles.bold]}>Qty</Text>
-                    <Text style={[styles.cell, styles.bold]}>F. Qty</Text>
-                    <Text style={[styles.cell, styles.bold]}>Rate</Text>
-                    <Text style={[styles.cell, styles.bold]}>Amount</Text>
-                </View>
+                        {/* Table Header */}
+                        <View style={styles.tableHeader}>
+                            <Text style={[styles.cell, styles.bold]}>No</Text>
+                            <Text style={[styles.cell, styles.bold]}>Product</Text>
+                            <Text style={[styles.cell, styles.bold]}>Qty</Text>
+                            <Text style={[styles.cell, styles.bold]}>F. Qty</Text>
+                            <Text style={[styles.cell, styles.bold]}>Rate</Text>
+                            <Text style={[styles.cell, styles.bold]}>Amount</Text>
+                        </View>
 
-                {/* Table Rows */}
-                {items.map((item, idx) => (
-                    <View style={styles.tableRow} key={idx}>
-                        <Text style={styles.cell}>{idx + 1}</Text>
-                        <Text style={styles.cell}>{item.product}</Text>
-                        <Text style={styles.cell}>{item.qty}</Text>
-                        <Text style={styles.cell}>{2}</Text>
-                        <Text style={styles.cell}>{item.rate}</Text>
-                        <Text style={styles.cell}>{item.amount}</Text>
-                    </View>
-                ))}
+                        {/* Table Rows */}
+                        {order.orderItems.map((item, idx) => (
+                            <View style={styles.tableRow} key={idx}>
+                                <Text style={styles.cell}>{idx + 1}</Text>
+                                <Text style={styles.cell}>{item.product.name}</Text>
+                                <Text style={styles.cell}>{item.quantity}</Text>
+                                <Text style={styles.cell}>{item.freeQuantity}</Text>
+                                <Text style={styles.cell}>{item.price}</Text>
+                                <Text style={styles.cell}>{item.total}</Text>
+                            </View>
+                        ))}
 
-                {/* Summary */}
-                <View style={styles.summary}>
-                    <View style={styles.row}>
-                        <Text>Subtotal:</Text>
-                        <Text>{subtotal}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text>Total:</Text>
-                        <Text>{total}</Text>
-                    </View>
-                    <Text>In Words: One Hundred Thirty Taka Only</Text>
-                </View>
+                        {/* Summary */}
+                        <View style={styles.summary}>
+                            <View style={styles.row}>
+                                <Text>Subtotal:</Text>
+                                <Text>{order.totalAmount}</Text>
+                            </View>
+                            <View style={styles.row}>
+                                <Text>Total:</Text>
+                                <Text>{order.totalAmount}</Text>
+                            </View>
+                            <Text>In Words: {numberToWords(order.totalAmount)}</Text>
+                        </View>
 
-                {/* Footer */}
-                <View style={[styles.section, styles.centerText]}>
-                    <Text>Thank you for your purchase!</Text>
-                </View>
-            </Page>
+                        {/* Footer */}
+                        <View style={[styles.section, styles.centerText]}>
+                            <Text>Thank you for your purchase!</Text>
+                        </View>
+                    </Page>
+                ))
+            }
         </Document>
     );
 };

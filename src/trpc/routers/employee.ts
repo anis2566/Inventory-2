@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
 import { EmployeeSchema } from "@/schema/employee";
 import { ROLE } from "@/constant";
 import { clerkClient } from "@/lib/clerk";
 
 export const employeeRouter = createTRPCRouter({
-    createOne: baseProcedure
+    createOne: adminProcedure
         .input(EmployeeSchema)
         .mutation(async ({ input }) => {
             const { name, phone, address, avatar, nid, status, userId } = input;
@@ -52,7 +52,7 @@ export const employeeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -89,7 +89,7 @@ export const employeeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -115,7 +115,7 @@ export const employeeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -144,7 +144,7 @@ export const employeeRouter = createTRPCRouter({
                 };
             }
         }),
-    forSelect: baseProcedure
+    forSelect: adminProcedure
         .input(
             z.object({
                 search: z.string().nullish(),
@@ -168,7 +168,7 @@ export const employeeRouter = createTRPCRouter({
             });
             return employees;
         }),
-    getOne: baseProcedure
+    getOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -183,7 +183,7 @@ export const employeeRouter = createTRPCRouter({
             });
             return employee;
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

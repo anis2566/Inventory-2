@@ -50,9 +50,5 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
         throw new TRPCError({ code: 'UNAUTHORIZED' })
     }
 
-    // if (user.role !== 'Admin') {
-    //     throw new TRPCError({ code: 'UNAUTHORIZED' })
-    // }
-
-    return next({ ctx: { ...ctx, auth: user, employee: user.employee } })
+    return next({ ctx: { ...ctx, auth: user } })
 })

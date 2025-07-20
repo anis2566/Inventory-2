@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
 import { CategorySchema } from "@/schema/category";
 
 export const categoryRouter = createTRPCRouter({
-    createOne: baseProcedure
+    createOne: adminProcedure
         .input(CategorySchema)
         .mutation(async ({ input }) => {
             const { name, description, status } = input;
@@ -33,7 +33,7 @@ export const categoryRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -67,7 +67,7 @@ export const categoryRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -93,7 +93,7 @@ export const categoryRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -122,7 +122,7 @@ export const categoryRouter = createTRPCRouter({
                 };
             }
         }),
-    forSelect: baseProcedure
+    forSelect: adminProcedure
         .input(
             z.object({
                 search: z.string().nullish(),
@@ -146,7 +146,7 @@ export const categoryRouter = createTRPCRouter({
             });
             return categories;
         }),
-    getOne: baseProcedure
+    getOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -161,7 +161,7 @@ export const categoryRouter = createTRPCRouter({
             });
             return category;
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

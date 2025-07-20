@@ -9,6 +9,11 @@ export const generateOrderId = async () => {
         throw new Error("Counter not found");
     }
 
+    await db.counter.update({
+        where: { id: counter.id },
+        data: { count: counter.count + 1 },
+    });
+
     const orderId = `HHE-${counter.count + 1}`
 
     return orderId;

@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check, ChevronsUpDown, Plus, Send, Trash2 } from "lucide-react"
-import { useMutation, useQueries, useQueryClient, useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -26,32 +26,19 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
 import { useTRPC } from "@/trpc/client"
 import { cn } from "@/lib/utils"
 import { useIncomingFilter } from "../../filter/use-incoming-filter"
-import { IncomingSchema, IncomingSchemaType } from "@/schema/incoming"
-import { PRODUCT_CONDITION } from "@/constant"
+import { IncomingSchema, IncomingSchemaType } from "@/schema/incoming-admin"
 
 export const IncomingForm = () => {
     const [searchProduct, setSearchProduct] = useState("")
     const [product, setProduct] = useState("")
     const [productId, setProductId] = useState("")
     const [quantity, setQuantity] = useState("")
-    const [reason, setReason] = useState("")
     const [price, setPrice] = useState("")
     const [openProduct, setOpenProduct] = useState(false)
-    const [searchEmployee, setSearchEmployee] = useState("")
-    const [employee, setEmployee] = useState("")
-    const [employeeId, setEmployeeId] = useState("")
-    const [openEmployee, setOpenEmployee] = useState(false)
 
     const [filter] = useIncomingFilter()
 
@@ -59,18 +46,9 @@ export const IncomingForm = () => {
     const trpc = useTRPC()
     const queryClient = useQueryClient()
 
-    const [employeeQuery, productQuery] = useQueries({
-        queries: [
-            {
-                ...trpc.employee.forSelect.queryOptions({ search: searchEmployee }),
-            },
-            {
-                ...trpc.product.forSelect.queryOptions({ search: searchProduct }),
-            }
-        ]
-    })
+    const { data } = useQuery(trpc.product.forSelect.queryOptions({ search: searchProduct }))
 
-    const { mutate: createIncoming, isPending } = useMutation(trpc.incoming.createOne.mutationOptions({
+    const { mutate: createIncoming, isPending } = useMutation(trpc.incomingAdmin.createOne.mutationOptions({
         onError: (error) => {
             toast.error(error.message);
         },
@@ -81,33 +59,31 @@ export const IncomingForm = () => {
             }
             toast.success(data.message);
             queryClient.invalidateQueries(
-                trpc.incoming.getMany.queryOptions({
+                trpc.incomingAdmin.getMany.queryOptions({
                     ...filter,
                 })
             );
-            router.push("/dashboard/incoming");
+            router.push("/dashboard/incoming/admin");
         },
     }))
 
     const form = useForm<IncomingSchemaType>({
         resolver: zodResolver(IncomingSchema),
         defaultValues: {
-            employeeId: "",
             items: [],
         },
     })
 
     const handleAddProduct = () => {
-        if (!productId || !quantity || !product || !reason || !price) return
+        if (!productId || !quantity || !product || !price) return
 
-        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product, reason, price }])
+        form.setValue("items", [...form.getValues().items, { quantity, productId, name: product, price }])
 
         form.trigger("items")
         setProductId("")
         setSearchProduct("")
         setProduct("")
         setQuantity("")
-        setReason("")
     }
 
     const handleRemoveProduct = (id: string) => {
@@ -145,66 +121,6 @@ export const IncomingForm = () => {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2 border border-gray-600 p-2">
-                            <h1 className="text-gray-400">SR</h1>
-                            <Popover open={openEmployee} onOpenChange={setOpenEmployee}>
-                                <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            className={cn(
-                                                "w-full justify-between bg-gray-700 border-gray-700 hover:bg-gray-600 hover:border-gray-600 text-gray-400 hover:text-white",
-                                            )}
-                                            disabled={isPending}
-                                        >
-                                            {employee ? employee : "Select employee"}
-                                            <ChevronsUpDown className="opacity-50" />
-                                        </Button>
-                                    </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0 border-gray-600">
-                                    <Command className="space-y-2 bg-gray-700 w-full min-w-[350px] p-2">
-                                        <Input
-                                            type="search"
-                                            placeholder="Search employee..."
-                                            value={searchEmployee}
-                                            onChange={(e) => setSearchEmployee(e.target.value)}
-                                            className="w-full bg-gray-600 placeholder:text-gray-400 rounded-full text-white"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>No employee found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {employeeQuery?.data?.map((p) => (
-                                                    <CommandItem
-                                                        value={p.id}
-                                                        key={p.id}
-                                                        onSelect={() => {
-                                                            setEmployee(p.name);
-                                                            setEmployeeId(p.id);
-                                                            form.setValue("employeeId", p.id);
-                                                            form.trigger("employeeId");
-                                                            setOpenEmployee(false);
-                                                        }}
-                                                        className="text-gray-400 data-[selected=true]:bg-gray-600 data-[selected=true]:text-white text-white"
-                                                    >
-                                                        {p.name}
-                                                        <Check
-                                                            className={cn(
-                                                                "ml-auto text-white",
-                                                                p.name === employee
-                                                                    ? "opacity-100"
-                                                                    : "opacity-0"
-                                                            )}
-                                                        />
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div className="space-y-2 border border-gray-600 p-2">
                             <h1 className="text-gray-400">Product</h1>
                             <Popover open={openProduct} onOpenChange={setOpenProduct}>
                                 <PopoverTrigger asChild>
@@ -234,7 +150,7 @@ export const IncomingForm = () => {
                                         <CommandList>
                                             <CommandEmpty>No product found.</CommandEmpty>
                                             <CommandGroup>
-                                                {productQuery?.data?.map((p) => (
+                                                {data?.map((p) => (
                                                     <CommandItem
                                                         value={p.id}
                                                         key={p.id}
@@ -266,20 +182,7 @@ export const IncomingForm = () => {
 
                             <Input type="number" placeholder="Quantity" className="mt-2" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
 
-                            <Select value={reason} onValueChange={(value) => setReason(value)}>
-                                <SelectTrigger className="w-full mt-4 text-gray-400">
-                                    <SelectValue placeholder="Select reason" className="text-gray-400" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {
-                                        Object.values(PRODUCT_CONDITION).slice(-2).map((reason) => (
-                                            <SelectItem key={reason} value={reason}>{reason}</SelectItem>
-                                        ))
-                                    }
-                                </SelectContent>
-                            </Select>
-
-                            <Button variant="gray" type="button" onClick={() => handleAddProduct()} disabled={!product || !quantity || !reason || isPending}>
+                            <Button variant="gray" type="button" onClick={() => handleAddProduct()} disabled={!product || !quantity || isPending}>
                                 <Plus className="h-4 w-4" />
                                 Add
                             </Button>

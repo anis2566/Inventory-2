@@ -1,5 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import {
     Breadcrumb,
@@ -11,15 +14,14 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { ContentLayout } from "@/modules/home/ui/view/content-layout";
-import { IncomingForm } from "@/modules/dashboard/incoming/ui/view/incoming-form";
+import { IncomingForm } from "@/modules/dashboard/incoming/ui/view/incoming-admin-form";
 
 export const metadata: Metadata = {
-    title: "New Outgoing",
-    description: "New Outgoing",
+    title: "New Incoming",
+    description: "New Incoming",
 };
 
-const NewOutgoing = async () => {
-
+const NewIncoming = async () => {
     return (
         <ContentLayout navChildren={<NavChildren />}>
             <IncomingForm />
@@ -27,7 +29,7 @@ const NewOutgoing = async () => {
     )
 }
 
-export default NewOutgoing
+export default NewIncoming
 
 const NavChildren = () => {
     return (
@@ -43,7 +45,7 @@ const NavChildren = () => {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink asChild>
-                        <Link href="/dashboard/incoming">
+                        <Link href="/dashboard/incoming/admin">
                             Incoming
                         </Link>
                     </BreadcrumbLink>

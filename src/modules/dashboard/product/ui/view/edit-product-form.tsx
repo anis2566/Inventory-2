@@ -202,20 +202,6 @@ export const EditProductForm = ({ id }: Props) => {
 
                         <FormField
                             control={form.control}
-                            name="stock"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Stock</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Stock" {...field} disabled={isPending} type="number" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
                             name="damageStock"
                             render={({ field }) => (
                                 <FormItem>

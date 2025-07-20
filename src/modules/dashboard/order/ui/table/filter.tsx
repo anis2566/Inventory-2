@@ -62,6 +62,10 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
         setFilter({ status: value });
     };
 
+    const handlePaymentStatusChange = (value: string) => {
+        setFilter({ paymentStatus: value });
+    };
+
     const handleClear = () => {
         setSearch("");
         setFilter({
@@ -155,8 +159,8 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
                     </SelectContent>
                 </Select>
                 <Select
-                    value={filter.status}
-                    onValueChange={(value) => handleStatusChange(value)}
+                    value={filter.paymentStatus}
+                    onValueChange={(value) => handlePaymentStatusChange(value)}
                 >
                     <SelectTrigger className="w-[150px]">
                         <SelectValue placeholder="P. Status" />

@@ -86,6 +86,7 @@ model Product {
   orderItems    OrderItem[]
   outgoingItems OutgoingItem[]
   incomingItems IngoingItem[]
+  incomingsAdmin IncomingItemAdmin[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -139,7 +140,7 @@ model Shop {
   id      String  @id @default(auto()) @map("_id") @db.ObjectId
   name    String
   address String
-  phone   String?
+  phone   String
 
   orders Order[]
 
@@ -262,6 +263,31 @@ model Incoming {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: NoAction)
 
   items IngoingItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IncomingAdmin {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  totalQuantity Int
+  total Int
+
+  items IncomingItemAdmin[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IncomingItemAdmin {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity Int
+
+  incomingId String   @db.ObjectId
+  incoming   IncomingAdmin @relation(fields: [incomingId], references: [id], onDelete: Cascade)
+
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: NoAction)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

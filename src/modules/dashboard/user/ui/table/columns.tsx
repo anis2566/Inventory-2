@@ -103,7 +103,6 @@ export const columns: ColumnDef<UserOmit>[] = [
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <RoleButton id={row.original.id} role={row.original.role as ROLE} />
                         <DeleteButton id={row.original.id} />
                     </DropdownMenuContent>
                 </DropdownMenu>

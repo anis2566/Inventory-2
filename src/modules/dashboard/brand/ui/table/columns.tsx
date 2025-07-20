@@ -80,7 +80,7 @@ export const columns: ColumnDef<CategoryOmit>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                             <Link
-                                href={`/brand/edit/${row.original.id}`}
+                                href={`/dashboard/brand/edit/${row.original.id}`}
                                 className="flex items-center gap-x-3"
                             >
                                 <Edit className="w-5 h-5" />

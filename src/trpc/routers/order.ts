@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
+import { adminProcedure, baseProcedure, createTRPCRouter, protectedProcedure, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS, ORDER_STATUS_SR, PAYMENT_STATUS } from "@/constant";
@@ -341,7 +341,8 @@ export const orderRouter = createTRPCRouter({
                         data: {
                             status,
                             paidAmount: existingOrder.totalAmount,
-                            dueAmount: 0
+                            dueAmount: 0,
+                            paymentStatus: PAYMENT_STATUS.Paid
                         }
                     })
                 } else if (status === ORDER_STATUS.Cancelled) {
@@ -385,7 +386,10 @@ export const orderRouter = createTRPCRouter({
                         id: {
                             in: ids,
                         },
-                        status: ORDER_STATUS.Placed,
+                        OR: [
+                            { status: ORDER_STATUS.Placed },
+                            { status: ORDER_STATUS.Shipped }
+                        ]
                     },
                 });
 
@@ -698,21 +702,21 @@ export const orderRouter = createTRPCRouter({
                             phone: true
                         }
                     },
-                    employee: {
-                        select: {
-                            name: true
-                        }
-                    },
                     orderItems: {
-                        include: {
-                            product: true,
+                        select: {
+                            quantity: true,
+                            price: true,
+                            product: {
+                                select: {
+                                    name: true,
+                                }
+                            },
+                            freeQuantity: true,
+                            total: true
                         }
                     }
                 }
             })
-
-
-            console.log(orders)
 
             return orders
         }),
@@ -874,6 +878,8 @@ export const orderRouter = createTRPCRouter({
             const { page, limit, sort, search, status, date, paymentStatus } = input;
 
             const targetDate = date ? new Date(date) : new Date()
+
+            console.log(sort)
 
             const dayStart = new Date(Date.UTC(
                 targetDate.getUTCFullYear(),

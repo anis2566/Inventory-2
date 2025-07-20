@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import { db } from "@/lib/db";
 import { ProductSchema } from "@/schema/product";
 
 export const productRouter = createTRPCRouter({
-    createOne: baseProcedure
+    createOne: adminProcedure
         .input(ProductSchema)
         .mutation(async ({ input }) => {
             const { name, description, productCode, status, categoryId, brandId, price, discountPrice, stock } = input;
@@ -39,7 +39,7 @@ export const productRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -87,7 +87,7 @@ export const productRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -113,7 +113,7 @@ export const productRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -142,7 +142,7 @@ export const productRouter = createTRPCRouter({
                 };
             }
         }),
-    forSelect: baseProcedure
+    forSelect: protectedProcedure
         .input(
             z.object({
                 search: z.string().nullish(),
@@ -178,7 +178,7 @@ export const productRouter = createTRPCRouter({
             });
             return products;
         }),
-    getOne: baseProcedure
+    getOne: protectedProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -205,7 +205,7 @@ export const productRouter = createTRPCRouter({
             });
             return product;
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

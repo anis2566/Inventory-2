@@ -73,7 +73,7 @@ export const columns: ColumnDef<ShopOmit>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                             <Link
-                                href={`/shop/edit/${row.original.id}`}
+                                href={`/dashboard/shop/edit/${row.original.id}`}
                                 className="flex items-center gap-x-3"
                             >
                                 <Edit className="w-5 h-5" />

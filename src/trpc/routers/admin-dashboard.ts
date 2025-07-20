@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { adminProcedure, createTRPCRouter } from "../init";
-import { PAYMENT_STATUS } from "@/constant";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
 
 export const adminDashboardRouter = createTRPCRouter({
     get: adminProcedure
@@ -34,7 +34,7 @@ export const adminDashboardRouter = createTRPCRouter({
             const lastMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
             const lastMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
 
-            const [thisMonthTotalProducts, lastMonthTotalProducts, thisMonthDamageProducts, lastMonthDamageProducts, thisMonthOutOfStockProducts, lastMonthOutOfStockProducts, totalProductQuantity, todayTotalOrders, thisWeekTotalOrders, lastWeekTotalOrders, thisMonthTotalOrders, lastMonthTotalOrders, totalDueOrders, todayTotalIncome, todayTotalExpense, thisWeekTotalIncome, thisWeekTotalExpense, thisMonthTotalIncome, thisMonthTotalExpense, totalIncome, totalExpense] = await Promise.all([
+            const [thisMonthTotalProducts, lastMonthTotalProducts, thisMonthDamageProducts, lastMonthDamageProducts, thisMonthOutOfStockProducts, lastMonthOutOfStockProducts, totalProductQuantity, todayTotalOrders, thisWeekTotalOrders, lastWeekTotalOrders, thisMonthTotalOrders, lastMonthTotalOrders, totalDueOrders, todayTotalIncome, todayTotalExpense, thisWeekTotalIncome, thisWeekTotalExpense, thisMonthTotalIncome, thisMonthTotalExpense, totalIncome, totalExpense, totalDeliveredOrders] = await Promise.all([
                 await db.product.count({
                     where: {
                         createdAt: {
@@ -217,7 +217,19 @@ export const adminDashboardRouter = createTRPCRouter({
                     _sum: {
                         amount: true
                     }
-                })
+                }),
+                await db.order.aggregate({
+                    where: {
+                        createdAt: {
+                            gte: startOfTheMonth,
+                            lte: endOfTheMonth
+                        },
+                        status: ORDER_STATUS.Delivered
+                    },
+                    _sum: {
+                        totalAmount: true
+                    }
+                }),
             ])
 
             // PRODUCT OVERVIEW
@@ -301,9 +313,11 @@ export const adminDashboardRouter = createTRPCRouter({
 
             // TOTAL INCOME & EXPENSE OVERVIEW
             const totalIncomeExpense = {
-                income: totalIncome._sum.amount ?? 0,
+                income: (totalIncome._sum.amount ?? 0) + (totalDeliveredOrders._sum.totalAmount ?? 0),
                 expense: totalExpense._sum.amount ?? 0
             }
+
+            console.log(totalIncomeExpense)
 
             return {
                 productOverview,
@@ -311,7 +325,7 @@ export const adminDashboardRouter = createTRPCRouter({
                 outOfStockOverview,
                 todayTotalOrders,
                 thisWeekOrderOverview,
-                thisMonthOrderOverview,
+                thisMonthOrderOverview, 
                 totalDueOrders,
                 todayIncomeExpense,
                 thisMonthIncomeExpense,

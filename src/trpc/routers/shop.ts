@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import { db } from "@/lib/db";
 import { ShopSchema } from "@/schema/shop";
 
 export const shopRouter = createTRPCRouter({
-    createOne: baseProcedure
+    createOne: protectedProcedure
         .input(ShopSchema)
         .mutation(async ({ input }) => {
             const { name, phone, address } = input;
@@ -33,7 +33,7 @@ export const shopRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: protectedProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -67,7 +67,7 @@ export const shopRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -93,7 +93,7 @@ export const shopRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -122,7 +122,7 @@ export const shopRouter = createTRPCRouter({
                 };
             }
         }),
-    forSelect: baseProcedure
+    forSelect: protectedProcedure
         .input(
             z.object({
                 search: z.string().nullish(),
@@ -146,7 +146,7 @@ export const shopRouter = createTRPCRouter({
             });
             return shops;
         }),
-    getOne: baseProcedure
+    getOne: protectedProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -161,7 +161,7 @@ export const shopRouter = createTRPCRouter({
             });
             return shop;
         }),
-    getMany: baseProcedure
+    getMany: protectedProcedure
         .input(
             z.object({
                 page: z.number(),

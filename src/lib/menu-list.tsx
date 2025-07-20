@@ -18,6 +18,7 @@ import {
     Calendar1,
     DollarSign,
     ScrollText,
+    CornerDownLeft,
 } from "lucide-react";
 
 type Submenu = {
@@ -222,10 +223,10 @@ export function getAdminMenuList(pathname: string): Group[] {
                     submenus: [],
                 },
                 {
-                    href: "/dashboard/incoming",
-                    label: "Stock In",
+                    href: "",
+                    label: "Return",
                     active: pathname === "/dashboard/incoming",
-                    icon: LogIn,
+                    icon: CornerDownLeft,
                     submenus: [
                         {
                             href: "/dashboard/incoming/new",
@@ -237,6 +238,27 @@ export function getAdminMenuList(pathname: string): Group[] {
                             href: "/dashboard/incoming",
                             label: "List",
                             active: pathname === "/dashboard/incoming",
+                            icon: List,
+                        },
+
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Stock In (Admin)",
+                    active: pathname === "/dashboard/incoming/admin",
+                    icon: LogIn,
+                    submenus: [
+                        {
+                            href: "/dashboard/incoming/admin/new",
+                            label: "New",
+                            active: pathname === "/dashboard/incoming/admin/new",
+                            icon: PlusCircle,
+                        },
+                        {
+                            href: "/dashboard/incoming/admin",
+                            label: "List",
+                            active: pathname === "/dashboard/incoming/admin",
                             icon: List,
                         },
 

@@ -20,9 +20,11 @@ import { PaymentStatusButton } from "./payment-status-button";
 import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
 import { OrderStatusButton } from "./status-button";
 
-type OrderOmit = Omit<Order, "createdAt" | "updatedAt"> & {
+type OrderOmit = Omit<Order, "createdAt" | "updatedAt" | "date" | "deliveryDate"> & {
     createdAt: string;
     updatedAt: string;
+    date: string;
+    deliveryDate: string | null;
     shop: {
         name: string;
     };

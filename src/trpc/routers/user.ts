@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import { db } from "@/lib/db";
 import { clerkClient } from "@/lib/clerk";
 
 export const userRouter = createTRPCRouter({
-    updateRole: baseProcedure
+    updateRole: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -44,7 +44,7 @@ export const userRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    forSelect: baseProcedure
+    forSelect: protectedProcedure
         .input(
             z.object({
                 search: z.string().nullish(),
@@ -69,7 +69,7 @@ export const userRouter = createTRPCRouter({
             });
             return users;
         }),
-    getOne: baseProcedure
+    getOne: protectedProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -84,7 +84,7 @@ export const userRouter = createTRPCRouter({
             });
             return user;
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

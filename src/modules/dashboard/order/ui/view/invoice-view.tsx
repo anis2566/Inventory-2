@@ -1,8 +1,9 @@
 "use client";
 
-import { useTRPC } from "@/trpc/client";
 import { PDFViewer } from "@react-pdf/renderer";
 import { useSuspenseQuery } from "@tanstack/react-query";
+
+import { useTRPC } from "@/trpc/client";
 import { Invoice } from "./invoice";
 
 export const InvoiceView = () => {
@@ -17,9 +18,11 @@ export const InvoiceView = () => {
         This is the invoice view. It will display the invoices fetched from the server.
       </p>
 
-      <PDFViewer style={{ width: "100%", height: "1000px" }}>
-        {/* <Invoice order={data} /> */}
-      </PDFViewer>
+      <div className="flex items-center justify-center">
+        <PDFViewer style={{ width: "50%", height: "1000px" }}>
+          <Invoice orders={data} />
+        </PDFViewer>
+      </div>
     </div>
   )
 }

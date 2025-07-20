@@ -16,6 +16,8 @@ export const DashboardView = () => {
         return <Loader />
     }
 
+    if(!data) return null;
+
     return (
         <div className="space-y-6 bg-gray-900 min-h-screen">
             <div>
@@ -167,7 +169,7 @@ export const DashboardView = () => {
 
                     <BalanceCard
                         title="Total Summary"
-                        value={data?.totalIncomeExpense.toString() || 0}
+                        value={data?.totalIncomeExpense.income - data?.todayIncomeExpense.expense || 0}
                         icon={ShoppingBag}
                         change={{ type: data?.totalIncomeExpense?.income > data?.totalIncomeExpense?.expense ? 'increase' : 'decrease', value: 5 }}
                         income={data?.totalIncomeExpense?.income || 0}

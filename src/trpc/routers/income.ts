@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { adminProcedure, baseProcedure, createTRPCRouter } from "../init";
+import { adminProcedure,  createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
 import { IncomeSchema } from "@/schema/income";
 
@@ -26,7 +26,7 @@ export const incomeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    updateOne: baseProcedure
+    updateOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -61,7 +61,7 @@ export const incomeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteOne: baseProcedure
+    deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
         )
@@ -87,7 +87,7 @@ export const incomeRouter = createTRPCRouter({
                 return { success: false, message: "Internal Server Error" }
             }
         }),
-    deleteMany: baseProcedure
+    deleteMany: adminProcedure
         .input(
             z.object({
                 ids: z.array(z.string()),
@@ -116,7 +116,7 @@ export const incomeRouter = createTRPCRouter({
                 };
             }
         }),
-    getOne: baseProcedure
+    getOne: adminProcedure
         .input(
             z.object({
                 id: z.string(),
@@ -131,7 +131,7 @@ export const incomeRouter = createTRPCRouter({
             });
             return income;
         }),
-    getMany: baseProcedure
+    getMany: adminProcedure
         .input(
             z.object({
                 page: z.number(),

@@ -93,7 +93,7 @@ export const ProductForm = () => {
             damageStock: "0",
             discountPrice: "",
             brandId: "",
-            stock: "",
+            stock: "0",
             categoryId: "",
             status: CATEGORY_STATUS.INACTIVE,
         },
@@ -162,20 +162,6 @@ export const ProductForm = () => {
                                     <FormLabel>Price</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Product price" {...field} disabled={isPending} type="number" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="stock"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Stock</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Stock" {...field} disabled={isPending} type="number" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
