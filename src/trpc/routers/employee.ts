@@ -3,6 +3,8 @@ import { z } from "zod";
 import { baseProcedure, createTRPCRouter } from "../init";
 import { db } from "@/lib/db";
 import { EmployeeSchema } from "@/schema/employee";
+import { ROLE } from "@/constant";
+import { clerkClient } from "@/lib/clerk";
 
 export const employeeRouter = createTRPCRouter({
     createOne: baseProcedure
@@ -19,17 +21,30 @@ export const employeeRouter = createTRPCRouter({
                     return { success: false, message: "Employee already exists" }
                 }
 
-                await db.employee.create({
-                    data: {
-                        userId,
-                        name,
-                        phone,
-                        address,
-                        avatar,
-                        nid,
-                        status
-                    },
-                });
+                await db.$transaction(async (tx) => {
+                    await tx.employee.create({
+                        data: {
+                            userId,
+                            name,
+                            phone,
+                            address,
+                            avatar,
+                            nid,
+                            status
+                        },
+                    })
+                    const existingUser = await tx.user.update({
+                        where: { id: userId },
+                        data: {
+                            role: ROLE.SR,
+                        },
+                    });
+                    await clerkClient.users.updateUserMetadata(existingUser.clerkId, {
+                        publicMetadata: {
+                            role: ROLE.SR,
+                        }
+                    })
+                })
 
                 return { success: true, message: "Employee created" }
             } catch (error) {

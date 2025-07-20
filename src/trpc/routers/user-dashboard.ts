@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { createTRPCRouter, srProcedure } from "../init";
-import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
+import { PAYMENT_STATUS } from "@/constant";
 
 export const userDashboardRouter = createTRPCRouter({
     get: srProcedure.query(async ({ ctx }) => {

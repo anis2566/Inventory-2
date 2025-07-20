@@ -153,6 +153,7 @@ model Shop {
 
 model Order {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @unique
   totalQuantity Int
   returnedQuantity Int  @default(0)
   freeQuantity Int  @default(0)
@@ -300,6 +301,14 @@ model Expense {
   month String
   amount Float
   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Counter {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  count Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

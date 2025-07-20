@@ -128,7 +128,7 @@ export const SaleOverview = () => {
                     <Card className="bg-gray-800 border-gray-700">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-gray-300">
-                                Net Balance
+                                Due Amount
                             </CardTitle>
                             <ArrowUpDown className="h-4 w-4 text-yellow-400" />
                         </CardHeader>
@@ -136,10 +136,10 @@ export const SaleOverview = () => {
                             <div
                                 className={cn(
                                     "text-2xl font-bold font-bengali tracking-wider",
-                                    data.netBalance >= 0 ? "text-green-400" : "text-red-400",
+                                    data.dueBalance >= 0 ? "text-green-400" : "text-red-400",
                                 )}
                             >
-                                ৳{data.netBalance}
+                                ৳{data.dueBalance}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,218 +1,192 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowUpDown, DollarSign, Package, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Clock, DollarSign, Eye, Package, ShoppingCart, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 import { useTRPC } from "@/trpc/client";
-import { cn } from "@/lib/utils";
+import { MobileOrderView } from "./mobile-view-order";
 
 export const DailySellReport = () => {
     const trpc = useTRPC();
 
     const { data } = useSuspenseQuery(trpc.sellReport.daily.queryOptions());
 
-    const { totalOutgoingCount, totalIncomingCount, totalDueCount } = data;
-
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Outgoing Stats */}
-            <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-300">
-                        Total Outgoing
-                    </CardTitle>
-                    <TrendingUp className="h-4 w-4 text-red-400" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-red-400" />
-                                <span className="text-xs text-gray-400">Amount</span>
-                            </div>
-                            <div className="text-2xl font-bold text-white font-bengali tracking-wider">
-                                ৳{totalOutgoingCount.amount}
-                            </div>
+        <div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-blue-900/30 border border-blue-800 rounded-2xl p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-blue-400 text-sm">Total Sales</p>
+                            <p className="text-3xl font-bold text-white font-bengali tracking-wider">৳{data?.overview?.totalAmount?.toLocaleString()}</p>
+                            <p className="text-blue-300 text-sm mt-1">+12% vs yesterday</p>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Package className="h-4 w-4 text-red-400" />
-                                <span className="text-xs text-gray-400">Quantity</span>
-                            </div>
-                            <div className="text-lg font-semibold text-gray-300">
-                                {totalOutgoingCount.quantity}
-                            </div>
+                        <div className="bg-gray-700 rounded-full p-3">
+                            <DollarSign className="w-6 h-6 text-blue-400" />
                         </div>
                     </div>
-                    <div className="mt-4 p-3 bg-red-900/20 rounded-lg border border-red-800/30">
-                        <p className="text-xs text-red-300">
-                            Total value of products going out
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Incoming Stats */}
-            <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-300">
-                        Total Incoming
-                    </CardTitle>
-                    <TrendingDown className="h-4 w-4 text-green-400" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-green-400" />
-                                <span className="text-xs text-gray-400">Amount</span>
-                            </div>
-                            <div className="text-2xl font-bold text-white font-bengali tracking-wider">
-                                ৳{totalIncomingCount.amount}
-                            </div>
+                <div className="bg-green-900/30 border border-green-800 rounded-2xl p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-green-400 text-sm">Orders</p>
+                            <p className="text-3xl font-bold text-white">{data?.overview?.totalOrder?.toLocaleString()}</p>
+                            <p className="text-green-300 text-sm mt-1">+3 new orders</p>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Package className="h-4 w-4 text-green-400" />
-                                <span className="text-xs text-gray-400">Quantity</span>
-                            </div>
-                            <div className="text-lg font-semibold text-gray-300">
-                                {totalIncomingCount.quantity}
-                            </div>
+                        <div className="bg-gray-700 rounded-full p-3">
+                            <ShoppingCart className="w-6 h-6 text-green-400" />
                         </div>
                     </div>
-                    <div className="mt-4 p-3 bg-green-900/20 rounded-lg border border-green-800/30">
-                        <p className="text-xs text-green-300">
-                            Total value of products coming in
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Due/Balance Stats */}
-            <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-300">
-                        Net Balance
-                    </CardTitle>
-                    <ArrowUpDown className="h-4 w-4 text-blue-400" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-blue-400" />
-                                <span className="text-xs text-gray-400">Amount</span>
-                            </div>
-                            <div
-                                className={cn(
-                                    "text-2xl font-bold font-bengali tracking-wider",
-                                    totalDueCount.amount >= 0 ? "text-red-400" : "text-green-400"
-                                )}
-                            >
-                                ৳{totalDueCount.amount}
-                            </div>
+                <div className="bg-purple-900/30 border border-purple-800 rounded-2xl p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-purple-400 text-sm">Items Sold</p>
+                            <p className="text-3xl font-bold text-white">{data?.overview?.totalQuantity?.toLocaleString()}</p>
+                            <p className="text-purple-300 text-sm mt-1">Across all orders</p>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Package className="h-4 w-4 text-blue-400" />
-                                <span className="text-xs text-gray-400">Quantity</span>
-                            </div>
-                            <div
-                                className={cn(
-                                    "text-lg font-semibold",
-                                    totalDueCount.quantity >= 0 ? "text-red-300" : "text-green-300"
-                                )}
-                            >
-                                {totalDueCount.quantity}
-                            </div>
+                        <div className="bg-gray-700 rounded-full p-3">
+                            <Package className="w-6 h-6 text-purple-400" />
                         </div>
                     </div>
-                    <div
-                        className={cn(
-                            "mt-4 p-3 rounded-lg border",
-                            totalDueCount.amount >= 0 ? "bg-red-900/20 border-red-800/30" : "bg-green-900/20 border-green-800/30"
-                        )}
-                    >
-                        <p
-                            className={cn(
-                                "text-xs",
-                                totalDueCount.amount >= 0 ? "text-red-300" : "text-green-300"
-                            )}
-                        >
-                            {totalDueCount.amount >= 0
-                                ? 'Net outgoing exceeds incoming'
-                                : 'Net incoming exceeds outgoing'
-                            }
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Summary Row */}
-            <div className="md:col-span-2 lg:col-span-3">
-                <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5" />
-                            Daily Summary
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="text-center p-4 bg-gray-700 rounded-lg">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <TrendingUp className="w-5 h-5 text-red-400" />
-                                    <span className="text-gray-300 font-medium">Outgoing</span>
+                <div className="bg-orange-900/30 border border-orange-800 rounded-2xl p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-orange-400 text-sm">Pending Payment</p>
+                            <p className="text-3xl font-bold text-white">${data?.overview?.unPaidAmount?.toLocaleString()}</p>
+                            <p className="text-orange-300 text-sm mt-1">Follow up required</p>
+                        </div>
+                        <div className="bg-gray-700 rounded-full p-3">
+                            <Clock className="w-6 h-6 text-orange-400" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-2 bg-gray-800 p-3 rounded-lg">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-white">Today&apos;s Orders</h2>
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>{data?.overview?.totalOrder} orders processed</span>
+                    </div>
+                </div>
+
+                <MobileOrderView orders={data.orders ?? []} />
+
+                <Table className="hidden md:table rounded-lg">
+                    <TableHeader>
+                        <TableRow className="bg-gray-700 hover:bg-gray-600 text-white">
+                            <TableCell>Shop</TableCell>
+                            <TableCell>Items</TableCell>
+                            <TableCell>T. Quantity</TableCell>
+                            <TableCell>F. Quantity</TableCell>
+                            <TableCell>R. Quantity</TableCell>
+                            <TableCell>D. Quantity</TableCell>
+                            <TableCell>Total</TableCell>
+                            <TableCell>P. Amount</TableCell>
+                            <TableCell>D. Amount</TableCell>
+                            <TableCell>P. Status</TableCell>
+                            <TableCell>Action</TableCell>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {
+                            data?.orders?.map((order) => (
+                                <TableRow key={order.id}>
+                                    <TableCell>{order.shop.name}</TableCell>
+                                    <TableCell>{order._count.orderItems}</TableCell>
+                                    <TableCell>{order.totalQuantity}</TableCell>
+                                    <TableCell>{order.freeQuantity}</TableCell>
+                                    <TableCell>{order.returnedQuantity}</TableCell>
+                                    <TableCell>{order.damageQuantity}</TableCell>
+                                    <TableCell>৳{order.totalAmount.toLocaleString()}</TableCell>
+                                    <TableCell>৳{order.paidAmount.toLocaleString()}</TableCell>
+                                    <TableCell>৳{(order.totalAmount - order.paidAmount).toLocaleString()}</TableCell>
+                                    <TableCell className="capitalize">{order.paymentStatus}</TableCell>
+                                    <TableCell>
+                                        <Button asChild variant="gray" size="icon" className="hover:bg-gray-700">
+                                            <Link href={`/order/${order.id}`} className="text-blue-400 hover:underline" prefetch>
+                                                <Eye className="w-5 h-5" />
+                                            </Link>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+
+                <Button asChild variant="link" className="mt-4 text-gray-400 mx-auto w-full max-w-fit block">
+                    <Link href="/order" className="text-blue-400 hover:underline" prefetch>View All</Link>
+                </Button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                {/* Outgoing Items */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center justify-center w-10 h-10 bg-orange-900/30 border border-orange-800 rounded-lg">
+                            <ArrowUpRight className="w-5 h-5 text-orange-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-white">Stock Out</h3>
+                            <p className="text-sm text-gray-400">Items stock out today</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-2xl font-bold text-white">{data?.outgoings?.total}</span>
+                            <span className="text-sm text-gray-400">Total Items</span>
+                        </div>
+                        {data?.outgoings?.items.map((item, itemIndex) => (
+                            <div key={itemIndex} className="flex justify-between items-center border-b border-gray-600 last:border-b-0">
+                                <div>
+                                    <p className="font-medium text-white">{item.product}</p>
+                                    <p className="text-sm text-gray-400">{item.productCode}</p>
                                 </div>
-                                <p className="text-2xl font-bold text-white mb-1 font-bengali tracking-wider">
-                                    ৳{totalOutgoingCount.amount}
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                    {totalOutgoingCount.quantity} items
-                                </p>
+                                <span className="font-semibold text-orange-400">{item.quantity}</span>
                             </div>
+                        ))}
+                    </div>
+                </div>
 
-                            <div className="text-center p-4 bg-gray-700 rounded-lg">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <TrendingDown className="w-5 h-5 text-green-400" />
-                                    <span className="text-gray-300 font-medium">Incoming</span>
-                                </div>
-                                <p className="text-2xl font-bold text-white mb-1 font-bengali tracking-wider">
-                                    ৳{totalIncomingCount.amount}
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                    {totalIncomingCount.quantity} items
-                                </p>
-                            </div>
-
-                            <div className="text-center p-4 bg-gray-700 rounded-lg">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <ArrowUpDown className="w-5 h-5 text-blue-400" />
-                                    <span className="text-gray-300 font-medium">Net Balance</span>
-                                </div>
-                                <p
-                                    className={cn(
-                                        "text-2xl font-bold font-bengali tracking-wider",
-                                        totalDueCount.amount >= 0 ? "text-red-400" : "text-green-400"
-                                    )}
-                                >
-                                    ৳{totalDueCount.amount >= 0 ? '+' : ''}{totalDueCount.amount}
-                                </p>
-                                <p
-                                    className={cn(
-                                        "text-sm",
-                                        totalDueCount.quantity >= 0 ? "text-red-300" : "text-green-300"
-                                    )}
-                                >
-                                    {totalDueCount.quantity >= 0 ? '+' : ''}{totalDueCount.quantity} items
-                                </p>
-                            </div>
+                {/* Incoming Items */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center justify-center w-10 h-10 bg-green-900/30 border border-green-800 rounded-lg">
+                            <ArrowDownRight className="w-5 h-5 text-green-400" />
                         </div>
-                    </CardContent>
-                </Card>
+                        <div>
+                            <h3 className="text-lg font-semibold text-white">Stock In Items</h3>
+                            <p className="text-sm text-gray-400">Items stock in today</p>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-2xl font-bold text-white">{data?.incomings?.total}</span>
+                            <span className="text-sm text-gray-400">Total Items</span>
+                        </div>
+                        {data?.incomings?.items.map((item, itemIndex) => (
+                            <div key={itemIndex} className="flex justify-between items-center border-b border-gray-600 last:border-b-0">
+                                <div>
+                                    <p className="font-medium text-white">{item.product}</p>
+                                    <p className="text-sm text-gray-400">{item.productCode}</p>
+                                </div>
+                                <span className="font-semibold text-green-400">+{item.quantity}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     )

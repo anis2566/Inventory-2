@@ -26,6 +26,7 @@ import { DeleteIncomeModal } from "@/modules/dashboard/income/ui/modal/delete-mo
 import { DeleteManyIncomeModal } from "@/modules/dashboard/income/ui/modal/delete-many-modal";
 import { DeleteExpenseModal } from "@/modules/dashboard/expense/ui/modal/delete-modal";
 import { DeleteManyExpenseModal } from "@/modules/dashboard/expense/ui/modal/delete-many-modal";
+import { DeliverAllOrderModal } from "@/modules/dashboard/order/ui/modal/delivery-all-modal";
 
 export const ModalProvider = () => {
     return (
@@ -54,6 +55,7 @@ export const ModalProvider = () => {
             <DeleteManyIncomeModal />
             <DeleteExpenseModal />
             <DeleteManyExpenseModal />
+            <DeliverAllOrderModal />
         </Suspense>
     )
 }

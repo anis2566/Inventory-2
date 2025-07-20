@@ -15,8 +15,6 @@ import { ErrorBoundryUI } from "@/components/error-boundary";
 import { ContentLayout } from "@/modules/home/ui/view/content-layout";
 import { DashboardView } from "@/modules/home/ui/view/dashboard-view";
 import { getQueryClient, trpc } from "@/trpc/server";
-import { db } from "@/lib/db";
-
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -27,12 +25,6 @@ const Dashboard = async () => {
   const queryClient = getQueryClient()
 
   void queryClient.prefetchQuery(trpc.userDashboard.get.queryOptions())
-
-  const orderItems = await db.orderItem.findMany({
-    
-  })
-
-  console.log(orderItems)
 
   return (
     <ContentLayout navChildren={<NavChildren />}>

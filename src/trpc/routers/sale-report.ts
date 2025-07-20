@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { createTRPCRouter, srProcedure } from "../init";
-import { ORDER_STATUS } from "@/constant";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constant";
 
 type WeeklyTrendUp = {
     date: string;
@@ -30,8 +30,8 @@ export const sellReportRouter = createTRPCRouter({
                 23, 59, 59, 999
             ))
 
-            const [totalOutgoing, totalIncoming] = await Promise.all([
-                await db.outgoing.aggregate({
+            const [totalOrder, totalOrderItems, unPaidOrders, todayOrders, outgoings, incomings] = await Promise.all([
+                await db.order.aggregate({
                     where: {
                         createdAt: {
                             gte: dayStart,
@@ -40,11 +40,40 @@ export const sellReportRouter = createTRPCRouter({
                         employeeId: employee.id,
                     },
                     _sum: {
-                        total: true,
-                        totalQuantity: true
+                        totalAmount: true,
+                    },
+                    _count: {
+                        _all: true,
                     }
                 }),
-                await db.incoming.aggregate({
+                await db.orderItem.aggregate({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                        order: {
+                            employeeId: employee.id,
+                        }
+                    },
+                    _sum: {
+                        quantity: true,
+                    }
+                }),
+                await db.order.aggregate({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                        employeeId: employee.id,
+                        paymentStatus: PAYMENT_STATUS.Unpaid
+                    },
+                    _sum: {
+                        totalAmount: true,
+                    },
+                }),
+                await db.order.findMany({
                     where: {
                         createdAt: {
                             gte: dayStart,
@@ -52,32 +81,94 @@ export const sellReportRouter = createTRPCRouter({
                         },
                         employeeId: employee.id,
                     },
-                    _sum: {
-                        total: true,
-                        totalQuantity: true
-                    }
-                })
+                    include: {
+                        shop: {
+                            select: {
+                                name: true,
+                            }
+                        },
+                        _count: {
+                            select: {
+                                orderItems: true,
+                            }
+                        },
+                    },
+                    take: 5
+                }),
+                await db.outgoingItem.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                        outgoing: {
+                            employeeId: employee.id,
+                        }
+                    },
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                productCode: true,
+                            }
+                        },
+                    },
+                }),
+                await db.ingoingItem.findMany({
+                    where: {
+                        createdAt: {
+                            gte: dayStart,
+                            lte: dayEnd,
+                        },
+                        incoming: {
+                            employeeId: employee.id,
+                        }
+                    },
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                productCode: true,
+                            }
+                        },
+                    },
+                }),
             ])
 
-            const totalOutgoingCount = {
-                amount: totalOutgoing._sum.total ?? 0,
-                quantity: totalOutgoing._sum.totalQuantity ?? 0
+            const overview = {
+                totalOrder: totalOrder._count._all ?? 0,
+                totalQuantity: totalOrderItems._sum.quantity ?? 0,
+                totalAmount: totalOrder._sum.totalAmount ?? 0,
+                unPaidAmount: unPaidOrders._sum.totalAmount ?? 0,
             }
 
-            const totalIncomingCount = {
-                amount: totalIncoming._sum.total ?? 0,
-                quantity: totalIncoming._sum.totalQuantity ?? 0
+            const formattedOutgoings = outgoings.map(outgoing => ({
+                product: outgoing.product.name,
+                quantity: outgoing.quantity,
+                productCode: outgoing.product.productCode,
+            }));
+
+            const outgoingOverview = {
+                total: formattedOutgoings.reduce((sum, item) => sum + item.quantity, 0),
+                items: formattedOutgoings,
             }
 
-            const totalDueCount = {
-                amount: totalOutgoingCount.amount - totalIncomingCount.amount,
-                quantity: totalOutgoingCount.quantity - totalIncomingCount.quantity
+            const formattedIncomings = incomings.map(incoming => ({
+                product: incoming.product.name,
+                quantity: incoming.quantity,
+                productCode: incoming.product.productCode,
+            }));
+
+            const incomingOverview = {
+                total: formattedIncomings.reduce((sum, item) => sum + item.quantity, 0),
+                items: formattedIncomings,
             }
 
             return {
-                totalOutgoingCount,
-                totalIncomingCount,
-                totalDueCount
+                overview,
+                orders: todayOrders,
+                outgoings: outgoingOverview,
+                incomings: incomingOverview
             }
         }),
     overall: srProcedure.query(async ({ ctx }) => {
@@ -97,7 +188,7 @@ export const sellReportRouter = createTRPCRouter({
         const lastMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
 
         // DATABSE AGG
-        const [thisWeekAgg, lastWeekAgg, thisMonthAgg, lastMonthAgg, totalOrders, totalOutgoing, totalIncoming] = await Promise.all([
+        const [thisWeekAgg, lastWeekAgg, thisMonthAgg, lastMonthAgg, totalOrders, dueOrders] = await Promise.all([
             await db.order.aggregate({
                 where: {
                     employeeId: employee.id,
@@ -142,19 +233,15 @@ export const sellReportRouter = createTRPCRouter({
                 _sum: { totalAmount: true },
                 _count: true
             }),
-            await db.outgoing.aggregate({
+            await db.order.aggregate({
                 where: {
                     employeeId: employee.id,
-
+                    paymentStatus: PAYMENT_STATUS.Due,
                 },
-                _sum: { total: true },
-            }),
-            await db.incoming.aggregate({
-                where: {
-                    employeeId: employee.id,
-                },
-                _sum: { total: true },
-            }),
+                _sum: {
+                    totalAmount: true,
+                }
+            })
         ])
 
         // WEEKLY TRENDS
@@ -219,16 +306,11 @@ export const sellReportRouter = createTRPCRouter({
             totalOrders: totalOrders._count ?? 0,
         }
 
-        console.log(avergeOrderOverview)
-
-        // NET BALANCE
-        const netBalance = (totalIncoming._sum.total ?? 0) - (totalOutgoing._sum.total ?? 0)
-
         return {
             weeklyOverview,
             weeklyTrends,
             totalSale: totalOrders._sum.totalAmount ?? 0,
-            netBalance,
+            dueBalance: dueOrders._sum.totalAmount ?? 0,
             totalOrders: totalOrders._count ?? 0,
             avergeOrderOverview,
             monthlyOverview,

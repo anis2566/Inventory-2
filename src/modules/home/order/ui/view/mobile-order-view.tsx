@@ -212,7 +212,7 @@ export const MobileOrderView = ({ orders, totalOrderCount, totalAmount, totalCou
 
                                     <CardContent className="p-2 pt-0">
                                         {/* Quantity Information */}
-                                        <div className="grid grid-cols-3 gap-3 mb-4">
+                                        <div className="grid grid-cols-4 gap-3 mb-4">
                                             <div className="text-center">
                                                 <div className="flex items-center justify-center gap-1 mb-1">
                                                     <Package className="h-3 w-3 text-blue-600" />
@@ -223,16 +223,23 @@ export const MobileOrderView = ({ orders, totalOrderCount, totalAmount, totalCou
                                             <div className="text-center">
                                                 <div className="flex items-center justify-center gap-1 mb-1">
                                                     <TrendingUp className="h-3 w-3 text-green-600" />
-                                                    <span className="text-xs text-gray-400">Total Qty</span>
+                                                    <span className="text-xs text-gray-400">Qty</span>
                                                 </div>
                                                 <p className="text-sm font-medium text-white">{order.totalQuantity}</p>
                                             </div>
                                             <div className="text-center">
                                                 <div className="flex items-center justify-center gap-1 mb-1">
                                                     <TrendingDown className="h-3 w-3 text-red-600" />
-                                                    <span className="text-xs text-gray-400">Returned</span>
+                                                    <span className="text-xs text-gray-400">F. Qty</span>
                                                 </div>
-                                                <p className="text-sm font-medium text-white">{order.returnedQuantity}</p>
+                                                <p className="text-sm font-medium text-white">{order.freeQuantity}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="flex items-center justify-center gap-1 mb-1">
+                                                    <TrendingDown className="h-3 w-3 text-red-600" />
+                                                    <span className="text-xs text-gray-400">T. Qty</span>
+                                                </div>
+                                                <p className="text-sm font-medium text-white">{order.totalQuantity + order.freeQuantity}</p>
                                             </div>
                                         </div>
 

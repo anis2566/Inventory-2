@@ -1,5 +1,3 @@
-"use client"
-
 import { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -14,22 +12,31 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ErrorBoundryUI } from "@/components/error-boundary";
 import Loader from "@/components/loader";
+import { ErrorBoundryUI } from "@/components/error-boundary";
 
 import { getQueryClient, trpc } from "@/trpc/server";
-import { ContentLayout } from "@/modules/dashboard/ui/view/content-layout";
-import { summarySearchParams } from "@/modules/dashboard/order/filter/params";
+import { ContentLayout } from "@/modules/home/ui/view/content-layout";
 import { InvoiceView } from "@/modules/dashboard/order/ui/view/invoice-view";
-import { PDFViewer } from "@react-pdf/renderer";
 
+export const metadata: Metadata = {
+    title: "Invoices",
+    description: "Invoices",
+};
 
 const Invoices = () => {
+
+    const queryClient = getQueryClient()
+
+    void queryClient.prefetchQuery(trpc.order.invoices.queryOptions());
+
     return (
         <ContentLayout navChildren={<NavChildren />}>
-                <PDFViewer width="100%" height="1000px">
+            <Suspense fallback={<Loader />}>
+                <ErrorBoundary fallback={<ErrorBoundryUI />}>
                     <InvoiceView />
-                </PDFViewer>
+                </ErrorBoundary>
+            </Suspense>
         </ContentLayout>
     )
 }

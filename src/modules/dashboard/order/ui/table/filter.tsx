@@ -2,7 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-import { CalendarIcon, CircleX } from "lucide-react";
+import { CalendarIcon, Check, CircleX, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import {
 } from "@/constant";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useOrderFilter } from "../../filter/use-order-filter";
+import { useDeleteManyOrder, useDeliverAllOrder } from "@/hooks/use-order";
 
 interface HasId {
     id: string;
@@ -44,6 +45,8 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
     const [search, setSearch] = useState<string>("");
     const [date, setDate] = useState<Date>()
 
+    const { onOpen } = useDeleteManyOrder();
+    const { onOpen: onOpenDeliver } = useDeliverAllOrder();
     const [filter, setFilter] = useOrderFilter();
     const debounceSearchValue = useDebounce(search, 500);
 
@@ -80,6 +83,25 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
         filter.status !== "" ||
         filter.date !== "" ||
         filter.paymentStatus !== ""
+
+    const isMultipleSelected =
+        table.getIsSomeRowsSelected() || table.getIsAllRowsSelected();
+
+    const onClick = () => {
+        const selectedIds = table
+            .getSelectedRowModel()
+            .rows.map((row) => row.original.id || "");
+
+        onOpen(selectedIds);
+    };
+
+    const onClickDeliver = () => {
+        const selectedIds = table
+            .getSelectedRowModel()
+            .rows.map((row) => row.original.id || "");
+
+        onOpenDeliver(selectedIds);
+    }
 
     return (
         <div className="w-full flex items-center justify-between">
@@ -123,7 +145,7 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
                 >
                     <SelectTrigger className="w-[150px]">
                         <SelectValue placeholder="Status" />
-                    </SelectTrigger> 
+                    </SelectTrigger>
                     <SelectContent>
                         {Object.values(ORDER_STATUS).map((v, i) => (
                             <SelectItem value={v} key={i}>
@@ -170,6 +192,26 @@ export const Filter = <TData extends HasId>({ table }: FilterProps<TData>) => {
                     >
                         <CircleX />
                         Clear
+                    </Button>
+                )}
+                {isMultipleSelected && (
+                    <Button
+                        variant="gray"
+                        className="text-red-500"
+                        onClick={onClick}
+                    >
+                        <Trash2 />
+                        Delete
+                    </Button>
+                )}
+                {isMultipleSelected && (
+                    <Button
+                        variant="gray"
+                        className="text-green-500"
+                        onClick={onClickDeliver}
+                    >
+                        <Check />
+                        Deliverd
                     </Button>
                 )}
             </div>

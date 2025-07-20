@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminProcedure, createTRPCRouter, srProcedure } from "../init";
 import { db } from "@/lib/db";
 import { OutgoingSchema } from "@/schema/outgoing";
+import { ORDER_STATUS } from "@/constant";
 
 export const outgoingRouter = createTRPCRouter({
     createOne: srProcedure
@@ -24,6 +25,15 @@ export const outgoingRouter = createTRPCRouter({
                         stock: true,
                     }
                 });
+
+                const orders = await db.order.findMany({
+                    where: {
+                        employeeId: employee.id,
+                    },
+                    select: {
+                        id: true
+                    }
+                })
 
                 const productMap = new Map(products.map(p => [p.id, p]));
 
@@ -79,6 +89,14 @@ export const outgoingRouter = createTRPCRouter({
                                 stock: {
                                     decrement: item.quantity
                                 }
+                            }
+                        })
+                    }
+                    for (const order of orders) {
+                        await tx.order.update({
+                            where: { id: order.id },
+                            data: {
+                                status: ORDER_STATUS.Shipped
                             }
                         })
                     }

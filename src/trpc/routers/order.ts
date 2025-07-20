@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { OrderSchema } from "@/schema/order";
 import { ORDER_STATUS, ORDER_STATUS_SR, PAYMENT_STATUS } from "@/constant";
 import { fr } from "date-fns/locale";
+import { generateOrderId } from "@/lib/order.action";
 
 export const orderRouter = createTRPCRouter({
     createOne: srProcedure
@@ -45,8 +46,11 @@ export const orderRouter = createTRPCRouter({
                     return acc + (item.freeQuantity ? parseInt(item.freeQuantity) : 0);
                 }, 0);
 
+                const orderId = await generateOrderId();
+
                 await db.order.create({
                     data: {
+                        orderId,
                         shopId,
                         totalQuantity,
                         totalAmount: total,
@@ -366,6 +370,47 @@ export const orderRouter = createTRPCRouter({
             }
 
         }),
+    deliverAll: srProcedure
+        .input(
+            z.object({
+                ids: z.array(z.string()),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const { ids } = input;
+
+            try {
+                const orders = await db.order.findMany({
+                    where: {
+                        id: {
+                            in: ids,
+                        },
+                        status: ORDER_STATUS.Placed,
+                    },
+                });
+
+                if (orders.length === 0) {
+                    return { success: false, message: "No orders found" }
+                }
+
+                for (const order of orders) {
+                    await db.order.update({
+                        where: { id: order.id },
+                        data: {
+                            status: ORDER_STATUS.Delivered,
+                            paidAmount: order.totalAmount,
+                            dueAmount: 0,
+                            paymentStatus: PAYMENT_STATUS.Paid
+                        }
+                    });
+                }
+                return { success: true, message: "Order updated" }
+            } catch (error) {
+                console.error("Error updating order", error);
+                return { success: false, message: "Internal Server Error" }
+            }
+
+        }),
     deleteOne: adminProcedure
         .input(
             z.object({ id: z.string() })
@@ -620,7 +665,57 @@ export const orderRouter = createTRPCRouter({
                 outgoing: data.outgoing,
             }));
         }),
+    invoices: adminProcedure
+        .query(async () => {
+            const targetDate = new Date()
 
+            const dayStart = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                0, 0, 0
+            ));
+
+            const dayEnd = new Date(Date.UTC(
+                targetDate.getUTCFullYear(),
+                targetDate.getUTCMonth(),
+                targetDate.getUTCDate(),
+                23, 59, 59, 999
+            ));
+
+            const orders = await db.order.findMany({
+                where: {
+                    createdAt: {
+                        gte: dayStart,
+                        lte: dayEnd,
+                    },
+                },
+                include: {
+                    shop: {
+                        select: {
+                            name: true,
+                            address: true,
+                            phone: true
+                        }
+                    },
+                    employee: {
+                        select: {
+                            name: true
+                        }
+                    },
+                    orderItems: {
+                        include: {
+                            product: true,
+                        }
+                    }
+                }
+            })
+
+
+            console.log(orders)
+
+            return orders
+        }),
     getOne: protectedProcedure
         .input(
             z.object({
